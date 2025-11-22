@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер Настроения - Биполярное Расстройство</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <div class="container">
+        <header class="header fade-in">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h1><span class="pink-icon">✿</span> Трекер Настроения</h1>
+                    <p class="subtitle">Отслеживание эмоциональных фаз</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span id="userInfo" style="color: var(--rose); font-weight: 600;"></span>
+                    <button id="logoutBtn" class="btn-secondary" style="padding: 10px 20px;">
+                        <span><span class="pink-icon">↲</span> Выйти</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Добавление новой записи -->
+            <section class="add-entry card slide-up">
+                <h2>Как вы себя чувствуете сегодня?</h2>
+                
+                <div class="mood-selector">
+                    <button class="mood-btn depressive" data-mood="depressive">
+                        <span class="mood-icon">🌧️</span>
+                        <span class="mood-label">Депрессивная фаза</span>
+                    </button>
+                    <button class="mood-btn interfase" data-mood="interfase">
+                        <span class="mood-icon">🌤️</span>
+                        <span class="mood-label">Интерфаза</span>
+                    </button>
+                    <button class="mood-btn manic" data-mood="manic">
+                        <span class="mood-icon">⚡</span>
+                        <span class="mood-label">Маниакальная фаза</span>
+                    </button>
+                </div>
+
+                <div class="intensity-selector">
+                    <label for="intensity">Интенсивность (1-10):</label>
+                    <div class="intensity-controls">
+                        <input type="range" id="intensity" min="1" max="10" value="5">
+                        <span class="intensity-value">5</span>
+                    </div>
+                </div>
+
+                <div class="notes-section">
+                    <label for="notes">Заметки:</label>
+                    <textarea id="notes" placeholder="Опишите ваше состояние, события дня, триггеры..."></textarea>
+                </div>
+
+                <button class="btn-primary" id="saveEntry">
+                    <span>Сохранить запись</span>
+                </button>
+            </section>
+
+            <!-- Статистика -->
+            <section class="stats card slide-up" style="animation-delay: 0.1s;">
+                <h2><span class="pink-icon">▦</span> Статистика</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon">🌧️</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="depressiveCount">0</div>
+                            <div class="stat-label">Депрессивных дней</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">🌤️</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="interfaseCount">0</div>
+                            <div class="stat-label">Интерфаз</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="manicCount">0</div>
+                            <div class="stat-label">Маниакальных дней</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon pink-icon">◫</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalDays">0</div>
+                            <div class="stat-label">Всего записей</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- График настроения -->
+            <section class="mood-chart card slide-up" style="animation-delay: 0.2s;">
+                <h2><span class="pink-icon">⟨⟩</span> График настроения (последние 30 дней)</h2>
+                <div class="chart-container" id="chartContainer">
+                    <canvas id="moodChart"></canvas>
+                </div>
+            </section>
+
+            <!-- История записей -->
+            <section class="history card slide-up" style="animation-delay: 0.3s;">
+                <h2><span class="pink-icon">▥</span> История записей</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">Все</button>
+                    <button class="filter-btn" data-filter="depressive">Депрессивные</button>
+                    <button class="filter-btn" data-filter="interfase">Интерфазы</button>
+                    <button class="filter-btn" data-filter="manic">Маниакальные</button>
+                </div>
+                <div class="entries-list" id="entriesList">
+                    <div class="empty-state">
+                        <p><span class="pink-icon">✎</span> Пока нет записей. Добавьте первую запись выше!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Экспорт данных -->
+            <section class="export-section card slide-up" style="animation-delay: 0.4s;">
+                <h2><span class="pink-icon">▣</span> Управление данными</h2>
+                <div class="export-buttons">
+                    <button class="btn-secondary" id="exportData">
+                        <span><span class="pink-icon">↓</span> Экспорт данных (JSON)</span>
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p><span class="pink-icon">♥</span> Забота о себе - это не эгоизм, это необходимость</p>
+            <p class="disclaimer">Этот инструмент не заменяет профессиональную медицинскую помощь</p>
+        </footer>
+    </div>
+
+    <script src="api-script.js"></script>
+</body>
+</html>
+
