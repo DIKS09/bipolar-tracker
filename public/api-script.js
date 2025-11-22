@@ -10,6 +10,9 @@ let currentUser = null;
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     initializeEventListeners();
+    initializeTheme();
+    initializeReminders();
+    checkAlerts();
 });
 
 // Проверка авторизации
@@ -170,6 +173,7 @@ function updateUI() {
     updateStats();
     renderEntries();
     drawChart();
+    analyzePatterns();
 }
 
 // Обновление статистики
@@ -555,6 +559,248 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Анализ паттернов
+function analyzePatterns() {
+    const container = document.getElementById('patternsContainer');
+    
+    if (entries.length < 3) {
+        container.innerHTML = `
+            <div class="pattern-alert" style="padding: 15px; border-radius: 12px; background: #e3f2fd; border-left: 4px solid #2196F3;">
+                <div style="font-weight: 600; margin-bottom: 5px;">📊 Недостаточно данных</div>
+                <div style="font-size: 0.9rem; color: var(--text-light);">Добавьте минимум 3 записи для анализа паттернов</div>
+            </div>
+        `;
+        return;
+    }
+
+    const patterns = [];
+    
+    // Анализ последних 7 дней
+    const last7Days = entries.slice(0, 7);
+    const recentMoods = last7Days.map(e => e.mood);
+    
+    // 1. Проверка на длительную депрессивную фазу
+    const depressiveCount = recentMoods.filter(m => m === 'depressive').length;
+    if (depressiveCount >= 4) {
+        patterns.push({
+            type: 'warning',
+            icon: '⚠️',
+            title: 'Длительная депрессивная фаза',
+            message: `${depressiveCount} депрессивных дней из последних 7. Рекомендуем связаться с врачом.`,
+            color: '#f44336'
+        });
+    }
+    
+    // 2. Проверка на маниакальную фазу
+    const manicCount = recentMoods.filter(m => m === 'manic').length;
+    if (manicCount >= 3) {
+        patterns.push({
+            type: 'warning',
+            icon: '⚡',
+            title: 'Признаки маниакальной фазы',
+            message: `${manicCount} маниакальных дней из последних 7. Следите за импульсивностью и сном.`,
+            color: '#FF6F00'
+        });
+    }
+    
+    // 3. Быстрая цикличность
+    let moodChanges = 0;
+    for (let i = 1; i < last7Days.length; i++) {
+        if (last7Days[i].mood !== last7Days[i-1].mood) {
+            moodChanges++;
+        }
+    }
+    if (moodChanges >= 5) {
+        patterns.push({
+            type: 'info',
+            icon: '🔄',
+            title: 'Быстрая цикличность',
+            message: `${moodChanges} смен настроения за неделю. Это может указывать на быстроциклическое течение.`,
+            color: '#FF9800'
+        });
+    }
+    
+    // 4. Стабильная интерфаза (хорошо!)
+    const interfaseCount = recentMoods.filter(m => m === 'interfase').length;
+    if (interfaseCount >= 5) {
+        patterns.push({
+            type: 'success',
+            icon: '✨',
+            title: 'Стабильный период',
+            message: `${interfaseCount} дней интерфазы из 7! Отличная работа по поддержанию стабильности.`,
+            color: '#4CAF50'
+        });
+    }
+    
+    // 5. Анализ интенсивности
+    const avgIntensity = entries.slice(0, 7).reduce((sum, e) => sum + e.intensity, 0) / Math.min(7, entries.length);
+    if (avgIntensity >= 8) {
+        patterns.push({
+            type: 'warning',
+            icon: '📈',
+            title: 'Высокая интенсивность симптомов',
+            message: `Средняя интенсивность ${avgIntensity.toFixed(1)}/10. Возможно, стоит скорректировать лечение.`,
+            color: '#f44336'
+        });
+    }
+    
+    // 6. Анализ за месяц - выявление цикла
+    if (entries.length >= 20) {
+        const last30 = entries.slice(0, 30);
+        const depressiveDays = last30.filter(e => e.mood === 'depressive').length;
+        const manicDays = last30.filter(e => e.mood === 'manic').length;
+        const interfaseDays = last30.filter(e => e.mood === 'interfase').length;
+        
+        patterns.push({
+            type: 'info',
+            icon: '📊',
+            title: 'Распределение за месяц',
+            message: `Депрессия: ${depressiveDays} дн. | Мания: ${manicDays} дн. | Интерфаза: ${interfaseDays} дн.`,
+            color: '#2196F3'
+        });
+    }
+    
+    // Отрисовка паттернов
+    if (patterns.length === 0) {
+        container.innerHTML = `
+            <div class="pattern-alert" style="padding: 15px; border-radius: 12px; background: #e8f5e9; border-left: 4px solid #4CAF50;">
+                <div style="font-weight: 600; margin-bottom: 5px;">✅ Паттернов не обнаружено</div>
+                <div style="font-size: 0.9rem; color: var(--text-light);">Продолжайте вести записи для отслеживания изменений</div>
+            </div>
+        `;
+    } else {
+        container.innerHTML = patterns.map(pattern => `
+            <div class="pattern-alert" style="padding: 15px; border-radius: 12px; background: ${pattern.color}15; border-left: 4px solid ${pattern.color};">
+                <div style="font-weight: 600; margin-bottom: 5px;">${pattern.icon} ${pattern.title}</div>
+                <div style="font-size: 0.9rem; color: var(--text-dark);">${pattern.message}</div>
+            </div>
+        `).join('');
+    }
+}
+
+// Инициализация темной темы
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        document.getElementById('themeIcon').textContent = '☀️';
+    }
+    
+    document.getElementById('themeToggle').addEventListener('click', () => {
+        document.body.classList.toggle('dark-theme');
+        const isDark = document.body.classList.contains('dark-theme');
+        document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+}
+
+// Инициализация напоминаний
+function initializeReminders() {
+    // Загрузка сохраненных настроек
+    const reminderEnabled = localStorage.getItem('dailyReminder') === 'true';
+    const reminderTime = localStorage.getItem('reminderTime') || '21:00';
+    
+    document.getElementById('dailyReminder').checked = reminderEnabled;
+    document.getElementById('reminderTime').value = reminderTime;
+    
+    // Сохранение настроек
+    document.getElementById('dailyReminder').addEventListener('change', (e) => {
+        localStorage.setItem('dailyReminder', e.target.checked);
+        if (e.target.checked) {
+            scheduleReminder();
+            showNotification('Напоминания включены!', 'success');
+        } else {
+            showNotification('Напоминания выключены', 'info');
+        }
+    });
+    
+    document.getElementById('reminderTime').addEventListener('change', (e) => {
+        localStorage.setItem('reminderTime', e.target.value);
+        if (document.getElementById('dailyReminder').checked) {
+            scheduleReminder();
+            showNotification('Время напоминания обновлено', 'success');
+        }
+    });
+    
+    // Запуск напоминаний
+    if (reminderEnabled) {
+        scheduleReminder();
+    }
+}
+
+// Планирование напоминания
+function scheduleReminder() {
+    const reminderTime = localStorage.getItem('reminderTime') || '21:00';
+    const [hours, minutes] = reminderTime.split(':').map(Number);
+    
+    const now = new Date();
+    const reminderDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+    
+    // Если время уже прошло, планируем на завтра
+    if (reminderDate <= now) {
+        reminderDate.setDate(reminderDate.getDate() + 1);
+    }
+    
+    const timeUntilReminder = reminderDate - now;
+    
+    setTimeout(() => {
+        if (localStorage.getItem('dailyReminder') === 'true') {
+            showNotification('⏰ Не забудьте добавить запись настроения!', 'info');
+            // Планируем следующее напоминание
+            scheduleReminder();
+        }
+    }, timeUntilReminder);
+}
+
+// Проверка алертов
+function checkAlerts() {
+    const alertsContainer = document.getElementById('alertsContainer');
+    const alerts = [];
+    
+    // Проверка: давно не добавляли запись
+    if (entries.length > 0) {
+        const lastEntry = new Date(entries[0].date);
+        const now = new Date();
+        const daysSinceLastEntry = Math.floor((now - lastEntry) / (1000 * 60 * 60 * 24));
+        
+        if (daysSinceLastEntry >= 2) {
+            alerts.push({
+                icon: '⚠️',
+                title: 'Давно не было записей',
+                message: `Последняя запись была ${daysSinceLastEntry} дня назад. Добавьте текущее состояние!`,
+                color: '#FF9800'
+            });
+        }
+    }
+    
+    // Проверка: мало данных о сне
+    const sleepReminder = localStorage.getItem('sleepReminderShown');
+    if (!sleepReminder && entries.length >= 5) {
+        alerts.push({
+            icon: '😴',
+            title: 'Отслеживайте сон',
+            message: 'Качество сна критически важно при БАР. Попробуйте трекер сна!',
+            color: '#2196F3',
+            action: 'sleep'
+        });
+    }
+    
+    if (alerts.length > 0) {
+        alertsContainer.innerHTML = alerts.map(alert => `
+            <div class="pattern-alert" style="padding: 15px; border-radius: 12px; background: ${alert.color}15; border-left: 4px solid ${alert.color}; margin-bottom: 10px;">
+                <div style="font-weight: 600; margin-bottom: 5px;">${alert.icon} ${alert.title}</div>
+                <div style="font-size: 0.9rem; color: var(--text-dark);">${alert.message}</div>
+                ${alert.action === 'sleep' ? `
+                    <button onclick="location.href='/sleep.html'; localStorage.setItem('sleepReminderShown', 'true');" 
+                            style="margin-top: 10px; padding: 8px 16px; background: var(--rose); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        Перейти к трекеру сна
+                    </button>
+                ` : ''}
+            </div>
+        `).join('');
+    }
 }
 
 // Обновление графика при изменении размера окна

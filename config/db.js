@@ -5,10 +5,7 @@ const connectDB = async () => {
     const reset = '\x1b[0m'; // Сброс цвета
     
     try {
-        const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bipolar-tracker', {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+        const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bipolar-tracker');
 
         console.log(`${pink}✓${reset} MongoDB подключена: ${conn.connection.host}`);
     } catch (error) {

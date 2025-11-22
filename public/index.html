@@ -16,8 +16,14 @@
                     <h1><span class="pink-icon">✿</span> Трекер Настроения</h1>
                     <p class="subtitle">Отслеживание эмоциональных фаз</p>
                 </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                     <span id="userInfo" style="color: var(--rose); font-weight: 600;"></span>
+                    <button onclick="location.href='/sleep.html'" class="btn-secondary" style="padding: 10px 20px;">
+                        <span>😴 Трекер Сна</span>
+                    </button>
+                    <button id="themeToggle" class="btn-secondary" style="padding: 10px 20px;">
+                        <span id="themeIcon">🌙</span>
+                    </button>
                     <button id="logoutBtn" class="btn-secondary" style="padding: 10px 20px;">
                         <span><span class="pink-icon">↲</span> Выйти</span>
                     </button>
@@ -98,6 +104,17 @@
                 </div>
             </section>
 
+            <!-- Детектор паттернов -->
+            <section class="patterns card slide-up" style="animation-delay: 0.15s;">
+                <h2><span class="pink-icon">🔍</span> Детектор паттернов</h2>
+                <div id="patternsContainer" style="display: grid; gap: 15px;">
+                    <div class="pattern-alert" style="padding: 15px; border-radius: 12px; background: #e3f2fd; border-left: 4px solid #2196F3;">
+                        <div style="font-weight: 600; margin-bottom: 5px;">Анализируем ваши данные...</div>
+                        <div style="font-size: 0.9rem; color: var(--text-light);">Добавьте больше записей для выявления паттернов</div>
+                    </div>
+                </div>
+            </section>
+
             <!-- График настроения -->
             <section class="mood-chart card slide-up" style="animation-delay: 0.2s;">
                 <h2><span class="pink-icon">⟨⟩</span> График настроения (последние 30 дней)</h2>
@@ -118,6 +135,28 @@
                 <div class="entries-list" id="entriesList">
                     <div class="empty-state">
                         <p><span class="pink-icon">✎</span> Пока нет записей. Добавьте первую запись выше!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Напоминания и алерты -->
+            <section class="reminders card slide-up" style="animation-delay: 0.35s;">
+                <h2><span class="pink-icon">🔔</span> Напоминания и алерты</h2>
+                <div id="alertsContainer" style="margin-bottom: 20px;"></div>
+                <div style="display: grid; gap: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: white; border-radius: 12px;">
+                        <div>
+                            <div style="font-weight: 600;">Ежедневное напоминание</div>
+                            <div style="font-size: 0.9rem; color: var(--text-light);">Напоминать добавить запись настроения</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="dailyReminder">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 12px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 10px;">Время напоминания</label>
+                        <input type="time" id="reminderTime" class="time-input" value="21:00">
                     </div>
                 </div>
             </section>

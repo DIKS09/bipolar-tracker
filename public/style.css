@@ -701,3 +701,122 @@ body {
     display: inline-block;
 }
 
+/* Поля ввода времени */
+.time-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid var(--light-pink);
+    border-radius: 15px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: var(--rose);
+    box-shadow: 0 0 0 4px rgba(255, 105, 180, 0.1);
+}
+
+/* Переключатель */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--rose);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Темная тема */
+body.dark-theme {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #e0e0e0;
+}
+
+body.dark-theme .card {
+    background: rgba(30, 30, 50, 0.85);
+    border: 1px solid rgba(255, 105, 180, 0.3);
+}
+
+body.dark-theme .header h1 {
+    color: #ff8fab;
+}
+
+body.dark-theme .card h2 {
+    color: #ff8fab;
+}
+
+body.dark-theme .subtitle {
+    color: #a0a0b0;
+}
+
+body.dark-theme .mood-btn,
+body.dark-theme .stat-item,
+body.dark-theme .entry-item {
+    background: rgba(40, 40, 60, 0.9);
+    color: #e0e0e0;
+}
+
+body.dark-theme #notes,
+body.dark-theme .time-input {
+    background: rgba(40, 40, 60, 0.9);
+    color: #e0e0e0;
+    border-color: rgba(255, 105, 180, 0.3);
+}
+
+body.dark-theme .filter-btn {
+    background: rgba(40, 40, 60, 0.9);
+    color: #e0e0e0;
+}
+
+body.dark-theme .empty-state {
+    color: #a0a0b0;
+}
+
+body.dark-theme .stat-label,
+body.dark-theme .entry-date {
+    color: #a0a0b0;
+}
+
+body.dark-theme .entry-notes {
+    color: #d0d0d0;
+}
+

@@ -34,6 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API маршруты
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/entries', require('./routes/entries'));
+app.use('/api/sleep', require('./routes/sleep'));
 
 // Главная страница
 app.get('/', (req, res) => {

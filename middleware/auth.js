@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Защита маршрутов
-exports.protect = async (req, res, next) => {
+const protect = async (req, res, next) => {
     let token;
 
     // Проверка наличия токена в заголовках
@@ -41,3 +41,6 @@ exports.protect = async (req, res, next) => {
     }
 };
 
+// Экспорт для использования и с деструктуризацией, и без
+module.exports = protect;
+module.exports.protect = protect;
