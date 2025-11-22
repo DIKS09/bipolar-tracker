@@ -652,25 +652,211 @@ body {
 
 /* Адаптивность */
 @media (max-width: 768px) {
+    /* Основной контейнер */
+    .container {
+        padding: 10px;
+    }
+    
+    /* Заголовок */
+    .header {
+        padding: 20px 10px;
+    }
+    
     .header h1 {
         font-size: 2rem;
     }
     
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    /* Карточки */
+    .card {
+        padding: 20px 15px;
+        margin-bottom: 20px;
+        border-radius: 20px;
+    }
+    
+    .card h2 {
+        font-size: 1.4rem;
+        margin-bottom: 20px;
+    }
+    
+    /* Выбор настроения */
     .mood-selector {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
     
+    .mood-btn {
+        padding: 20px 15px;
+    }
+    
+    .mood-icon {
+        font-size: 2.5rem;
+    }
+    
+    /* Статистика */
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
     
-    .card {
-        padding: 20px;
+    .stat-item {
+        padding: 20px 15px;
     }
     
+    .stat-icon {
+        font-size: 2rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    /* Кнопки */
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        padding: 15px 25px;
+        font-size: 1rem;
+        margin: 5px 0;
+    }
+    
+    .filter-buttons {
+        justify-content: center;
+    }
+    
+    .filter-btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+    
+    /* Экспорт кнопки */
+    .export-buttons {
+        flex-direction: column;
+    }
+    
+    .export-buttons button {
+        width: 100%;
+    }
+    
+    /* Записи */
     .entry-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+    
+    .entry-item {
+        padding: 15px;
+    }
+    
+    .entry-mood {
+        font-size: 1rem;
+    }
+    
+    /* Интенсивность */
+    .intensity-selector label {
+        font-size: 1rem;
+    }
+    
+    .intensity-controls {
+        gap: 15px;
+    }
+    
+    .intensity-value {
+        font-size: 1.3rem;
+    }
+    
+    /* Текстовые поля */
+    #notes,
+    .time-input {
+        font-size: 0.95rem;
+    }
+    
+    /* График */
+    #moodChart {
+        height: 250px !important;
+    }
+    
+    /* Футер */
+    .footer {
+        padding: 30px 10px;
+        font-size: 0.9rem;
+    }
+    
+    /* Фоновая анимация - уменьшаем размеры */
+    .background-animation::before {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .background-animation::after {
+        width: 300px;
+        height: 300px;
+    }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .card {
+        padding: 15px 10px;
+        border-radius: 15px;
+    }
+    
+    .card h2 {
+        font-size: 1.2rem;
+    }
+    
+    .mood-btn {
+        padding: 15px 10px;
+    }
+    
+    .mood-icon {
+        font-size: 2rem;
+    }
+    
+    .mood-label {
+        font-size: 0.9rem;
+    }
+    
+    .stat-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        padding: 12px 20px;
+        font-size: 0.95rem;
+    }
+    
+    .filter-btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .intensity-value {
+        font-size: 1.2rem;
+        min-width: 35px;
+    }
+    
+    #moodChart {
+        height: 200px !important;
+    }
+    
+    .background-animation::before,
+    .background-animation::after {
+        width: 200px;
+        height: 200px;
     }
 }
 
@@ -818,5 +1004,117 @@ body.dark-theme .entry-date {
 
 body.dark-theme .entry-notes {
     color: #d0d0d0;
+}
+
+/* Мобильная адаптивность для трекера сна */
+@media (max-width: 768px) {
+    /* Заголовок страницы сна */
+    .header > div {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center;
+    }
+    
+    .header > div > div:first-child {
+        order: 1;
+    }
+    
+    .header > div > div:last-child {
+        order: 2;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    /* Таблица сна */
+    .sleep-table {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+    
+    th, td {
+        padding: 8px 6px;
+        font-size: 0.85rem;
+    }
+    
+    /* Форма добавления сна */
+    .sleep-form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+    
+    .form-group label {
+        font-size: 0.95rem;
+    }
+    
+    select, input[type="date"], input[type="time"], input[type="number"] {
+        font-size: 0.95rem;
+    }
+    
+    /* Canvas график */
+    canvas {
+        max-width: 100%;
+        height: auto !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .header > div > div:last-child {
+        width: 100%;
+    }
+    
+    .header > div > div:last-child button {
+        flex: 1;
+        min-width: auto;
+    }
+    
+    table {
+        font-size: 0.75rem;
+    }
+    
+    th, td {
+        padding: 6px 4px;
+        font-size: 0.75rem;
+    }
+    
+    .btn-secondary {
+        padding: 8px 12px !important;
+        font-size: 0.85rem;
+    }
+}
+
+/* Улучшение touch-целей для мобильных */
+@media (hover: none) and (pointer: coarse) {
+    /* Увеличиваем область нажатия для кнопок */
+    button, .btn-primary, .btn-secondary, .mood-btn, .filter-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Убираем hover эффекты на touch устройствах */
+    .card:hover,
+    .mood-btn:hover,
+    .stat-item:hover,
+    .entry-item:hover,
+    .btn-primary:hover,
+    .btn-secondary:hover {
+        transform: none;
+    }
+    
+    /* Активное состояние для touch */
+    .btn-primary:active {
+        transform: scale(0.95);
+    }
+    
+    .mood-btn:active {
+        transform: scale(0.98);
+    }
 }
 
