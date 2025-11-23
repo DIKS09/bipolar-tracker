@@ -1,5 +1,5 @@
-// API URL
-const API_URL = 'http://localhost:3000/api';
+// API URL - используем относительный путь для работы на любом домене
+const API_URL = '/api';
 
 // Переключение между вкладками
 document.querySelectorAll('.auth-tab').forEach(tab => {

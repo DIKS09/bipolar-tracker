@@ -1,5 +1,5 @@
-// API конфигурация
-const API_URL = 'http://localhost:3000/api';
+// API конфигурация - используем относительный путь для работы на любом домене
+const API_URL = '/api';
 let currentMood = null;
 let currentFilter = 'all';
 let entries = [];
