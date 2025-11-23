@@ -10,7 +10,9 @@ const connectDB = async () => {
         console.log(`${pink}✓${reset} MongoDB подключена: ${conn.connection.host}`);
     } catch (error) {
         console.error(`${pink}✗${reset} Ошибка подключения MongoDB: ${error.message}`);
-        process.exit(1);
+        console.log(`${pink}⚠${reset} Сервер продолжает работать без базы данных`);
+        console.log(`${pink}→${reset} Фронтенд доступен, но функции сохранения данных не работают`);
+        // Не останавливаем сервер, продолжаем работу
     }
 };
 
