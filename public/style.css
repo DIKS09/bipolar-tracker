@@ -1204,6 +1204,73 @@ body.dark-theme .error-message {
     border-left-color: #d32f2f;
 }
 
+/* Секция напоминаний в темной теме */
+body.dark-theme .reminders {
+    background: rgba(30, 30, 50, 0.85);
+}
+
+body.dark-theme .reminders > div > div {
+    background: rgba(30, 30, 50, 0.9) !important;
+}
+
+body.dark-theme .reminders label {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .reminders div {
+    color: #e0e0e0;
+}
+
+body.dark-theme .reminders div[style*="color: var(--text-light)"] {
+    color: #a0a0b0 !important;
+}
+
+/* Затемняем розовые элементы в темной теме */
+body.dark-theme .pink-icon {
+    color: #b388ff !important;
+}
+
+body.dark-theme .header h1 {
+    color: #b388ff;
+    text-shadow: 2px 2px 4px rgba(138, 43, 226, 0.3);
+}
+
+body.dark-theme .card h2 {
+    color: #b388ff;
+}
+
+body.dark-theme .stat-value {
+    color: #b388ff;
+}
+
+body.dark-theme .intensity-value {
+    color: #b388ff;
+}
+
+body.dark-theme #userInfo {
+    color: #b388ff !important;
+}
+
+body.dark-theme .entry-mood {
+    color: #e0e0e0;
+}
+
+/* Алерты паттернов - полная поддержка темной темы */
+body.dark-theme .pattern-alert div[style*="font-weight: 600"] {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .pattern-alert div[style*="color: var(--text-light)"],
+body.dark-theme .pattern-alert div[style*="color: var(--text-dark)"] {
+    color: #d0d0d0 !important;
+}
+
+body.dark-theme .pattern-alert button {
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.8), rgba(75, 0, 130, 0.8)) !important;
+    color: #e0e0e0 !important;
+    border-color: transparent !important;
+}
+
 /* Мобильная адаптивность для трекера сна */
 @media (max-width: 768px) {
     /* Заголовок страницы сна */
