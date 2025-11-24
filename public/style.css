@@ -974,7 +974,7 @@ input:checked + .slider:before {
     transform: translateX(26px);
 }
 
-/* Темная тема */
+/* Темная тема - полностью темная, без белого */
 body.dark-theme {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     color: #e0e0e0;
@@ -982,18 +982,20 @@ body.dark-theme {
 
 /* Исправление фона анимации для темной темы */
 body.dark-theme .background-animation::before {
-    background: radial-gradient(circle, rgba(138, 43, 226, 0.3), transparent);
+    background: radial-gradient(circle, rgba(138, 43, 226, 0.2), transparent);
 }
 
 body.dark-theme .background-animation::after {
-    background: radial-gradient(circle, rgba(75, 0, 130, 0.3), transparent);
+    background: radial-gradient(circle, rgba(75, 0, 130, 0.2), transparent);
 }
 
+/* Карточки */
 body.dark-theme .card {
     background: rgba(30, 30, 50, 0.85);
     border: 1px solid rgba(255, 105, 180, 0.3);
 }
 
+/* Заголовки */
 body.dark-theme .header h1 {
     color: #ff8fab;
 }
@@ -1006,37 +1008,132 @@ body.dark-theme .subtitle {
     color: #a0a0b0;
 }
 
-body.dark-theme .mood-btn,
+/* Кнопки фаз настроения - темные */
+body.dark-theme .mood-btn {
+    background: rgba(30, 30, 50, 0.9);
+    color: #e0e0e0;
+}
+
+body.dark-theme .mood-btn.depressive {
+    border-color: rgba(168, 199, 231, 0.5);
+}
+
+body.dark-theme .mood-btn.interfase {
+    border-color: rgba(200, 230, 201, 0.5);
+}
+
+body.dark-theme .mood-btn.manic {
+    border-color: rgba(255, 224, 130, 0.5);
+}
+
+body.dark-theme .mood-btn.active {
+    background: rgba(50, 50, 80, 0.95);
+    border-width: 2px;
+}
+
+/* Кнопки - темные */
+body.dark-theme .btn-primary,
+body.dark-theme .btn-secondary {
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.8), rgba(75, 0, 130, 0.8));
+    color: #e0e0e0;
+    box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+}
+
+body.dark-theme .btn-primary:hover,
+body.dark-theme .btn-secondary:hover {
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.9), rgba(75, 0, 130, 0.9));
+    box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4);
+}
+
+/* Статистика и записи */
 body.dark-theme .stat-item,
 body.dark-theme .entry-item {
-    background: rgba(40, 40, 60, 0.9);
+    background: rgba(30, 30, 50, 0.9);
     color: #e0e0e0;
+    border-color: rgba(255, 105, 180, 0.3);
 }
 
+/* Все поля ввода - темные */
 body.dark-theme #notes,
 body.dark-theme .time-input,
-body.dark-theme textarea {
-    background: rgba(40, 40, 60, 0.9);
+body.dark-theme textarea,
+body.dark-theme input[type="text"],
+body.dark-theme input[type="time"],
+body.dark-theme input[type="date"],
+body.dark-theme input[type="number"],
+body.dark-theme input[type="email"],
+body.dark-theme input[type="password"] {
+    background: rgba(30, 30, 50, 0.9);
     color: #e0e0e0;
-    border-color: rgba(255, 105, 180, 0.3);
+    border-color: rgba(255, 105, 180, 0.4);
 }
 
+body.dark-theme #notes::placeholder,
+body.dark-theme textarea::placeholder,
+body.dark-theme input::placeholder {
+    color: #7a7a8a;
+}
+
+body.dark-theme #notes:focus,
+body.dark-theme .time-input:focus,
+body.dark-theme textarea:focus,
+body.dark-theme input:focus {
+    border-color: #ff8fab;
+    box-shadow: 0 0 0 4px rgba(255, 138, 171, 0.2);
+}
+
+/* Слайдеры */
+body.dark-theme #intensity,
+body.dark-theme input[type="range"] {
+    background: linear-gradient(to right, rgba(138, 43, 226, 0.5), rgba(255, 138, 171, 0.7));
+}
+
+body.dark-theme #intensity::-webkit-slider-thumb {
+    background: #ff8fab;
+}
+
+body.dark-theme #intensity::-moz-range-thumb {
+    background: #ff8fab;
+}
+
+/* Фильтры */
 body.dark-theme .filter-btn {
-    background: rgba(40, 40, 60, 0.9);
+    background: rgba(30, 30, 50, 0.9);
     color: #e0e0e0;
-    border-color: rgba(255, 105, 180, 0.3);
+    border-color: rgba(255, 105, 180, 0.4);
+}
+
+body.dark-theme .filter-btn:hover {
+    background: rgba(40, 40, 60, 0.9);
 }
 
 body.dark-theme .filter-btn.active {
-    background: var(--rose);
-    color: white;
-    border-color: var(--rose);
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.8), rgba(75, 0, 130, 0.8));
+    color: #e0e0e0;
+    border-color: transparent;
 }
 
+/* Кнопка удаления */
+body.dark-theme .entry-delete {
+    background: rgba(30, 30, 50, 0.9);
+    border-color: rgba(211, 47, 47, 0.5);
+    color: #ff6b6b;
+}
+
+body.dark-theme .entry-delete:hover {
+    background: rgba(211, 47, 47, 0.2);
+    border-color: #d32f2f;
+    color: #ff4444;
+}
+
+/* Пустое состояние */
 body.dark-theme .empty-state {
     color: #a0a0b0;
+    background: rgba(30, 30, 50, 0.5);
+    border-color: rgba(255, 105, 180, 0.3);
 }
 
+/* Текст */
 body.dark-theme .stat-label,
 body.dark-theme .entry-date {
     color: #a0a0b0;
@@ -1046,17 +1143,65 @@ body.dark-theme .entry-notes {
     color: #d0d0d0;
 }
 
-body.dark-theme .chart-container {
-    background: rgba(40, 40, 60, 0.7);
-}
-
-body.dark-theme .pattern-alert {
-    background: rgba(40, 40, 60, 0.9) !important;
+body.dark-theme .mood-label,
+body.dark-theme .intensity-value {
     color: #e0e0e0;
 }
 
+body.dark-theme .stat-value {
+    color: #ff8fab;
+}
+
+/* График */
+body.dark-theme .chart-container {
+    background: rgba(30, 30, 50, 0.7);
+}
+
+/* Алерты паттернов */
+body.dark-theme .pattern-alert {
+    background: rgba(30, 30, 50, 0.9) !important;
+    color: #e0e0e0;
+}
+
+/* Футер */
 body.dark-theme .footer {
     color: #a0a0b0;
+}
+
+/* Переключатель */
+body.dark-theme .slider {
+    background-color: rgba(80, 80, 100, 0.8);
+}
+
+body.dark-theme input:checked + .slider {
+    background-color: rgba(138, 43, 226, 0.8);
+}
+
+/* Чекбоксы */
+body.dark-theme input[type="checkbox"] {
+    background: rgba(30, 30, 50, 0.9);
+    border: 2px solid rgba(255, 105, 180, 0.4);
+}
+
+/* Страница авторизации в темной теме */
+body.dark-theme .auth-tab {
+    background: rgba(30, 30, 50, 0.9);
+    color: #e0e0e0;
+}
+
+body.dark-theme .auth-tab.active {
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.8), rgba(75, 0, 130, 0.8));
+    color: #e0e0e0;
+}
+
+body.dark-theme .form-group label {
+    color: #e0e0e0;
+}
+
+body.dark-theme .error-message {
+    background: rgba(211, 47, 47, 0.2);
+    color: #ff6b6b;
+    border-left-color: #d32f2f;
 }
 
 /* Мобильная адаптивность для трекера сна */
