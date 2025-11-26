@@ -173,23 +173,6 @@
                 <div class="notes-section">
                     <label for="notes">Заметки:</label>
                     <textarea id="notes" placeholder="Опишите ваше состояние, события дня, триггеры..."></textarea>
-                    
-                    <!-- Аудио-запись -->
-                    <div class="audio-recorder">
-                        <button type="button" id="audioRecordBtn" class="audio-btn">
-                            <span id="audioIcon">🎤</span>
-                            <span id="audioText">Записать голосовую заметку</span>
-                        </button>
-                        <div id="audioTimer" style="display: none; margin-top: 10px; font-weight: 600; color: var(--rose); text-align: center;">
-                            <span id="recordingTime">00:00</span>
-                        </div>
-                        <div id="audioPreview" style="display: none; margin-top: 15px;">
-                            <audio id="audioPlayer" controls style="width: 100%; border-radius: 10px;"></audio>
-                            <button type="button" id="audioDeleteBtn" class="audio-delete-btn" style="margin-top: 10px;">
-                                <span>🗑️ Удалить запись</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <button class="btn-primary" id="saveEntry">
@@ -353,62 +336,6 @@
                     <div style="padding: 15px; background: white; border-radius: 12px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 10px;">Время напоминания</label>
                         <input type="time" id="reminderTime" class="time-input" value="21:00">
-                    </div>
-                </div>
-            </section>
-
-            <!-- Интеграция с носимыми устройствами -->
-            <section class="wearables-section card slide-up" style="animation-delay: 0.39s;">
-                <h2><span class="pink-icon">🔗</span> Носимые устройства</h2>
-                <p style="color: var(--text-light); margin-bottom: 20px;">Синхронизируйте данные о сне, активности и пульсе с вашего устройства</p>
-                
-                <div class="wearables-grid">
-                    <!-- Google Fit -->
-                    <div class="wearable-card">
-                        <div class="wearable-icon">📱</div>
-                        <div class="wearable-name">Google Fit</div>
-                        <div class="wearable-status disconnected">Не подключено</div>
-                        <button class="wearable-btn" data-device="googlefit">
-                            <span>Подключить</span>
-                        </button>
-                    </div>
-
-                    <!-- Fitbit -->
-                    <div class="wearable-card">
-                        <div class="wearable-icon">⌚</div>
-                        <div class="wearable-name">Fitbit</div>
-                        <div class="wearable-status disconnected">Не подключено</div>
-                        <button class="wearable-btn" data-device="fitbit">
-                            <span>Подключить</span>
-                        </button>
-                    </div>
-
-                    <!-- Apple Health -->
-                    <div class="wearable-card">
-                        <div class="wearable-icon">🍎</div>
-                        <div class="wearable-name">Apple Health</div>
-                        <div class="wearable-status disconnected">Не подключено</div>
-                        <button class="wearable-btn" data-device="applehealth">
-                            <span>Подключить</span>
-                        </button>
-                    </div>
-
-                    <!-- Samsung Health -->
-                    <div class="wearable-card">
-                        <div class="wearable-icon">🏃</div>
-                        <div class="wearable-name">Samsung Health</div>
-                        <div class="wearable-status disconnected">Не подключено</div>
-                        <button class="wearable-btn" data-device="samsunghealth">
-                            <span>Подключить</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div id="wearablesInfo" style="margin-top: 20px; padding: 15px; background: rgba(33, 150, 243, 0.1); border-radius: 12px; border-left: 4px solid #2196F3;">
-                    <div style="font-weight: 600; margin-bottom: 5px;">ℹ️ В разработке</div>
-                    <div style="font-size: 0.9rem; color: var(--text-dark);">
-                        Интеграция с носимыми устройствами находится в активной разработке. 
-                        Скоро вы сможете автоматически синхронизировать данные о сне, пульсе и активности для более точного анализа связи с вашим настроением.
                     </div>
                 </div>
             </section>

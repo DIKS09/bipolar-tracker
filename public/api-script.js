@@ -6,14 +6,6 @@ let entries = [];
 let token = null;
 let currentUser = null;
 
-// Аудио-рекордер
-let mediaRecorder = null;
-let audioChunks = [];
-let audioBlob = null;
-let recordingStartTime = null;
-let recordingInterval = null;
-let audioDuration = 0;
-
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
@@ -137,123 +129,6 @@ function initializeEventListeners() {
     
     // Выход
     document.getElementById('logoutBtn').addEventListener('click', logout);
-
-    // Аудио-рекордер
-    initializeAudioRecorder();
-
-    // Носимые устройства
-    initializeWearables();
-}
-
-// Инициализация аудио-рекордера
-function initializeAudioRecorder() {
-    const recordBtn = document.getElementById('audioRecordBtn');
-    const deleteBtn = document.getElementById('audioDeleteBtn');
-
-    recordBtn.addEventListener('click', toggleAudioRecording);
-    deleteBtn.addEventListener('click', deleteAudioRecording);
-}
-
-// Переключение записи аудио
-async function toggleAudioRecording() {
-    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-        await startAudioRecording();
-    } else {
-        stopAudioRecording();
-    }
-}
-
-// Начать запись аудио
-async function startAudioRecording() {
-    try {
-        console.log('🎤 Запрос доступа к микрофону...');
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        console.log('✅ Доступ к микрофону получен');
-        
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-
-        mediaRecorder.ondataavailable = (event) => {
-            console.log('📦 Получен кусок аудио:', event.data.size, 'bytes');
-            audioChunks.push(event.data);
-        };
-
-        mediaRecorder.onstop = () => {
-            console.log('⏹️ Запись остановлена. Всего кусков:', audioChunks.length);
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            console.log('💾 Создан аудио blob:', audioBlob.size, 'bytes');
-            
-            const audioUrl = URL.createObjectURL(audioBlob);
-            document.getElementById('audioPlayer').src = audioUrl;
-            document.getElementById('audioPreview').style.display = 'block';
-            
-            // Останавливаем все треки
-            stream.getTracks().forEach(track => track.stop());
-        };
-
-        mediaRecorder.start();
-        recordingStartTime = Date.now();
-        console.log('🔴 Запись началась в', new Date(recordingStartTime).toLocaleTimeString());
-
-        // UI обновления
-        document.getElementById('audioIcon').textContent = '⏹️';
-        document.getElementById('audioText').textContent = 'Остановить запись';
-        document.getElementById('audioRecordBtn').classList.add('recording');
-        document.getElementById('audioTimer').style.display = 'block';
-
-        // Таймер
-        recordingInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
-            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
-            document.getElementById('recordingTime').textContent = `${minutes}:${seconds}`;
-        }, 1000);
-
-        showNotification('Запись началась', 'info');
-    } catch (error) {
-        console.error('❌ Ошибка доступа к микрофону:', error);
-        showNotification('Не удалось получить доступ к микрофону. Проверьте разрешения браузера.', 'error');
-    }
-}
-
-// Остановить запись аудио
-function stopAudioRecording() {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        // Сохраняем длительность до остановки
-        audioDuration = Math.floor((Date.now() - recordingStartTime) / 1000);
-        console.log('⏱️ Длительность записи:', audioDuration, 'секунд');
-        
-        mediaRecorder.stop();
-        clearInterval(recordingInterval);
-
-        // UI обновления
-        document.getElementById('audioIcon').textContent = '🎤';
-        document.getElementById('audioText').textContent = 'Записать голосовую заметку';
-        document.getElementById('audioRecordBtn').classList.remove('recording');
-        document.getElementById('audioTimer').style.display = 'none';
-        document.getElementById('recordingTime').textContent = '00:00';
-
-        showNotification('Запись сохранена', 'success');
-    }
-}
-
-// Удалить аудио-запись
-function deleteAudioRecording() {
-    audioBlob = null;
-    audioDuration = 0;
-    document.getElementById('audioPlayer').src = '';
-    document.getElementById('audioPreview').style.display = 'none';
-    showNotification('Аудио-запись удалена', 'info');
-}
-
-// Конвертация Blob в Base64
-function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
 }
 
 // Обновление секций симптомов в зависимости от выбранной фазы
@@ -340,22 +215,6 @@ async function saveEntry() {
         entryData.moodStability = document.getElementById('moodStability')?.checked || false;
     }
 
-    // Добавляем аудио-запись, если есть
-    if (audioBlob) {
-        console.log('🎵 Добавляем аудио к записи. Размер:', audioBlob.size, 'bytes, Длительность:', audioDuration, 'сек');
-        try {
-            const audioBase64 = await blobToBase64(audioBlob);
-            console.log('✅ Аудио конвертировано в base64. Длина:', audioBase64.length, 'символов');
-            entryData.audioNote = audioBase64;
-            entryData.audioNoteDuration = audioDuration;
-        } catch (error) {
-            console.error('❌ Ошибка конвертации аудио:', error);
-            showNotification('Ошибка сохранения аудио', 'error');
-        }
-    } else {
-        console.log('ℹ️ Аудио-запись отсутствует');
-    }
-
     try {
         const response = await fetch(`${API_URL}/entries`, {
             method: 'POST',
@@ -393,12 +252,6 @@ async function saveEntry() {
             document.getElementById('aggressivenessScale').style.display = 'none';
             document.getElementById('irritabilityScale').style.display = 'none';
             document.getElementById('moodStabilityCheck').style.display = 'none';
-            
-            // Сбросить аудио
-            audioBlob = null;
-            audioDuration = 0;
-            document.getElementById('audioPlayer').src = '';
-            document.getElementById('audioPreview').style.display = 'none';
             
             currentMood = null;
 
@@ -553,21 +406,6 @@ function renderEntries() {
         } else if (entry.mood === 'interfase' && entry.moodStability) {
             scalesHtml = `<div style="margin-top: 10px;"><strong>✓</strong> Настроение не менялось</div>`;
         }
-
-        // Аудио-запись
-        let audioHtml = '';
-        if (entry.audioNote) {
-            const duration = entry.audioNoteDuration ? formatDuration(entry.audioNoteDuration) : '';
-            audioHtml = `
-                <div style="margin-top: 10px;">
-                    <strong>🎤 Голосовая заметка ${duration}</strong>
-                    <audio controls style="width: 100%; margin-top: 5px; border-radius: 8px;" preload="none">
-                        <source src="${entry.audioNote}" type="audio/webm">
-                        Ваш браузер не поддерживает аудио.
-                    </audio>
-                </div>
-            `;
-        }
         
         return `
             <div class="entry-item ${entry.mood}">
@@ -589,18 +427,10 @@ function renderEntries() {
                 ${triggersHtml}
                 ${scalesHtml}
                 ${entry.notes ? `<div class="entry-notes" style="margin-top: 10px;">${escapeHtml(entry.notes)}</div>` : ''}
-                ${audioHtml}
                 <button class="entry-delete" onclick="deleteEntry('${entry._id}')"><span class="pink-icon">✕</span> Удалить</button>
             </div>
         `;
     }).join('');
-}
-
-// Форматирование длительности аудио
-function formatDuration(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `(${mins}:${secs.toString().padStart(2, '0')})`;
 }
 }
 
@@ -1937,36 +1767,6 @@ function analyzeEarlyWarning() {
             </div>
         `).join('');
     }
-}
-
-// Инициализация носимых устройств
-function initializeWearables() {
-    document.querySelectorAll('.wearable-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const device = this.dataset.device;
-            connectWearableDevice(device, this);
-        });
-    });
-}
-
-// Подключение носимого устройства
-function connectWearableDevice(device, button) {
-    const deviceNames = {
-        googlefit: 'Google Fit',
-        fitbit: 'Fitbit',
-        applehealth: 'Apple Health',
-        samsunghealth: 'Samsung Health'
-    };
-
-    showNotification(`Подключение к ${deviceNames[device]}...`, 'info');
-
-    // Имитация подключения (в будущем здесь будет реальная интеграция с OAuth)
-    setTimeout(() => {
-        showNotification(
-            `Интеграция с ${deviceNames[device]} находится в разработке. Скоро вы сможете синхронизировать данные о сне и активности!`,
-            'info'
-        );
-    }, 1000);
 }
 
 // Обновление графика при изменении размера окна

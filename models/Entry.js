@@ -61,13 +61,6 @@ const EntrySchema = new mongoose.Schema({
         type: String,
         maxlength: [1000, 'Заметки не должны превышать 1000 символов']
     },
-    // Аудио-запись (base64)
-    audioNote: {
-        type: String
-    },
-    audioNoteDuration: {
-        type: Number // длительность в секундах
-    },
     date: {
         type: Date,
         default: Date.now

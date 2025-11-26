@@ -646,68 +646,6 @@ body {
     box-shadow: 0 0 0 4px rgba(255, 105, 180, 0.1);
 }
 
-/* Аудио-рекордер */
-.audio-recorder {
-    margin-top: 15px;
-}
-
-.audio-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #FF69B4, #FFC0CB);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
-}
-
-.audio-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 105, 180, 0.4);
-}
-
-.audio-btn.recording {
-    background: linear-gradient(135deg, #f44336, #ff7961);
-    animation: pulse 1.5s infinite;
-}
-
-.audio-delete-btn {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    background: rgba(244, 67, 54, 0.1);
-    color: #d32f2f;
-    border: 1px solid rgba(244, 67, 54, 0.3);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-}
-
-.audio-delete-btn:hover {
-    background: rgba(244, 67, 54, 0.2);
-    border-color: #d32f2f;
-}
-
-#audioPlayer {
-    background: rgba(255, 182, 193, 0.1);
-    padding: 10px;
-    border-radius: 10px;
-}
-
-#audioTimer {
-    font-size: 1.2rem;
-    animation: pulse 1.5s infinite;
-}
-
 /* Кнопки - унифицированный стиль */
 .btn-primary,
 .btn-secondary {
@@ -966,80 +904,6 @@ body {
     background: rgba(255, 182, 193, 0.05);
     border-radius: 12px;
     border: 2px dashed var(--light-pink);
-}
-
-/* Носимые устройства */
-.wearables-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.wearable-card {
-    background: rgba(255, 182, 193, 0.05);
-    padding: 20px;
-    border-radius: 12px;
-    border: 2px solid var(--light-pink);
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.wearable-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px var(--shadow);
-    border-color: var(--rose);
-}
-
-.wearable-icon {
-    font-size: 3rem;
-    margin-bottom: 10px;
-}
-
-.wearable-name {
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 8px;
-    font-size: 1.1rem;
-}
-
-.wearable-status {
-    font-size: 0.85rem;
-    padding: 5px 10px;
-    border-radius: 20px;
-    margin-bottom: 12px;
-    display: inline-block;
-}
-
-.wearable-status.connected {
-    background: rgba(76, 175, 80, 0.2);
-    color: #2e7d32;
-}
-
-.wearable-status.disconnected {
-    background: rgba(158, 158, 158, 0.2);
-    color: #616161;
-}
-
-.wearable-btn {
-    width: 100%;
-    padding: 10px 15px;
-    background: linear-gradient(135deg, var(--rose), var(--soft-pink));
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.wearable-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px var(--shadow);
-}
-
-.wearable-btn.connected {
-    background: linear-gradient(135deg, #4CAF50, #66BB6A);
 }
 
 /* Экспорт */
@@ -1731,32 +1595,6 @@ body.dark-theme .correlation-value {
     color: #b388ff;
 }
 
-/* Аудио-рекордер в темной теме */
-body.dark-theme .audio-btn {
-    background: linear-gradient(135deg, rgba(138, 43, 226, 0.8), rgba(75, 0, 130, 0.8));
-    box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-}
-
-body.dark-theme .audio-btn:hover {
-    box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4);
-}
-
-body.dark-theme .audio-btn.recording {
-    background: linear-gradient(135deg, #f44336, #ff7961);
-}
-
-body.dark-theme #audioPlayer {
-    background: rgba(30, 30, 50, 0.7);
-}
-
-body.dark-theme .audio-delete-btn {
-    background: rgba(244, 67, 54, 0.2);
-    border-color: rgba(244, 67, 54, 0.5);
-}
-
-body.dark-theme .audio-delete-btn:hover {
-    background: rgba(244, 67, 54, 0.3);
-}
 
 /* Носимые устройства в темной теме */
 body.dark-theme .wearable-card {
