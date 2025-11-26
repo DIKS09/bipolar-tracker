@@ -522,20 +522,29 @@ function initializeColorTheme() {
     const savedColorTheme = localStorage.getItem('colorTheme') || 'pink';
     applyColorTheme(savedColorTheme);
 
+    const colorThemeBtn = document.getElementById('colorThemeToggle');
+    const colorModal = document.getElementById('colorModal');
+    const closeBtn = document.getElementById('closeColorModal');
+
+    if (!colorThemeBtn || !colorModal || !closeBtn) {
+        console.warn('Элементы цветовой темы не найдены');
+        return;
+    }
+
     // Кнопка открытия модального окна
-    document.getElementById('colorThemeToggle').addEventListener('click', () => {
-        document.getElementById('colorModal').style.display = 'flex';
+    colorThemeBtn.addEventListener('click', () => {
+        colorModal.style.display = 'flex';
     });
 
     // Закрытие модального окна
-    document.getElementById('closeColorModal').addEventListener('click', () => {
-        document.getElementById('colorModal').style.display = 'none';
+    closeBtn.addEventListener('click', () => {
+        colorModal.style.display = 'none';
     });
 
     // Клик вне модального окна
-    document.getElementById('colorModal').addEventListener('click', (e) => {
+    colorModal.addEventListener('click', (e) => {
         if (e.target.id === 'colorModal') {
-            document.getElementById('colorModal').style.display = 'none';
+            colorModal.style.display = 'none';
         }
     });
 
@@ -545,7 +554,7 @@ function initializeColorTheme() {
             const theme = this.dataset.theme;
             applyColorTheme(theme);
             localStorage.setItem('colorTheme', theme);
-            document.getElementById('colorModal').style.display = 'none';
+            colorModal.style.display = 'none';
             showNotification(`Цветовая тема изменена!`, 'success');
         });
     });
