@@ -51,12 +51,123 @@
                     </button>
                 </div>
 
+                <!-- Симптомы депрессии -->
+                <div id="depressiveSymptoms" class="symptoms-section" style="display: none;">
+                    <h3>Симптомы депрессии:</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="depressive-insomnia" class="symptom-checkbox">
+                            <span>Бессонница</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="depressive-oversleeping" class="symptom-checkbox">
+                            <span>Пересып</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="depressive-energyLoss" class="symptom-checkbox">
+                            <span>Упадок сил</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="depressive-lossOfInterest" class="symptom-checkbox">
+                            <span>Потеря интереса</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="depressive-suicidalThoughts" class="symptom-checkbox">
+                            <span>Суицидальные мысли</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="depressive-appetiteChanges" class="symptom-checkbox">
+                            <span>Изменения аппетита</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Симптомы мании -->
+                <div id="manicSymptoms" class="symptoms-section" style="display: none;">
+                    <h3>Симптомы мании/гипомании:</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="manic-reducedSleep" class="symptom-checkbox">
+                            <span>Сниженная потребность во сне</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="manic-rapidSpeech" class="symptom-checkbox">
+                            <span>Ускоренная речь</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="manic-racingThoughts" class="symptom-checkbox">
+                            <span>Скачки мыслей</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="manic-impulsivity" class="symptom-checkbox">
+                            <span>Повышенная импульсивность</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="manic-excessiveSpending" class="symptom-checkbox">
+                            <span>Траты денег</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Триггеры -->
+                <div class="triggers-section">
+                    <h3>Раздражители и триггеры:</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="trigger-stress" class="trigger-checkbox">
+                            <span>Стресс</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="trigger-lackOfSleep" class="trigger-checkbox">
+                            <span>Недосып</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="trigger-conflict" class="trigger-checkbox">
+                            <span>Конфликт</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="trigger-alcohol" class="trigger-checkbox">
+                            <span>Алкоголь</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="trigger-seasonalChanges" class="trigger-checkbox">
+                            <span>Сезонные изменения</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="intensity-selector">
                     <label for="intensity">Интенсивность (1-10):</label>
                     <div class="intensity-controls">
                         <input type="range" id="intensity" min="1" max="10" value="5">
                         <span class="intensity-value">5</span>
                     </div>
+                </div>
+
+                <!-- Шкала агрессивности (для депрессивной фазы) -->
+                <div id="aggressivenessScale" class="scale-selector" style="display: none;">
+                    <label for="aggressiveness">Агрессивность (1-10):</label>
+                    <div class="intensity-controls">
+                        <input type="range" id="aggressiveness" min="1" max="10" value="5">
+                        <span class="aggressiveness-value">5</span>
+                    </div>
+                </div>
+
+                <!-- Шкала раздражительности (для маниакальной фазы) -->
+                <div id="irritabilityScale" class="scale-selector" style="display: none;">
+                    <label for="irritability">Раздражительность (1-10):</label>
+                    <div class="intensity-controls">
+                        <input type="range" id="irritability" min="1" max="10" value="5">
+                        <span class="irritability-value">5</span>
+                    </div>
+                </div>
+
+                <!-- Чекбокс стабильности настроения (для интерфазы) -->
+                <div id="moodStabilityCheck" class="mood-stability-section" style="display: none;">
+                    <label class="checkbox-label" style="font-size: 1.1rem; margin: 15px 0;">
+                        <input type="checkbox" id="moodStability" class="symptom-checkbox">
+                        <span>Настроение не менялось</span>
+                    </label>
                 </div>
 
                 <div class="notes-section">

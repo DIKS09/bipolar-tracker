@@ -62,6 +62,9 @@ function initializeEventListeners() {
             document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentMood = btn.dataset.mood;
+            
+            // Показать/скрыть соответствующие секции
+            updateSymptomSections(currentMood);
         });
     });
 
@@ -76,6 +79,34 @@ function initializeEventListeners() {
             intensityValue.style.transform = 'scale(1)';
         }, 200);
     });
+
+    // Слайдер агрессивности
+    const aggressivenessSlider = document.getElementById('aggressiveness');
+    const aggressivenessValue = document.querySelector('.aggressiveness-value');
+    
+    if (aggressivenessSlider) {
+        aggressivenessSlider.addEventListener('input', (e) => {
+            aggressivenessValue.textContent = e.target.value;
+            aggressivenessValue.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                aggressivenessValue.style.transform = 'scale(1)';
+            }, 200);
+        });
+    }
+
+    // Слайдер раздражительности
+    const irritabilitySlider = document.getElementById('irritability');
+    const irritabilityValue = document.querySelector('.irritability-value');
+    
+    if (irritabilitySlider) {
+        irritabilitySlider.addEventListener('input', (e) => {
+            irritabilityValue.textContent = e.target.value;
+            irritabilityValue.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                irritabilityValue.style.transform = 'scale(1)';
+            }, 200);
+        });
+    }
 
     // Сохранение записи
     document.getElementById('saveEntry').addEventListener('click', saveEntry);
@@ -97,6 +128,33 @@ function initializeEventListeners() {
     document.getElementById('logoutBtn').addEventListener('click', logout);
 }
 
+// Обновление секций симптомов в зависимости от выбранной фазы
+function updateSymptomSections(mood) {
+    const depressiveSymptoms = document.getElementById('depressiveSymptoms');
+    const manicSymptoms = document.getElementById('manicSymptoms');
+    const aggressivenessScale = document.getElementById('aggressivenessScale');
+    const irritabilityScale = document.getElementById('irritabilityScale');
+    const moodStabilityCheck = document.getElementById('moodStabilityCheck');
+
+    // Скрыть все секции
+    depressiveSymptoms.style.display = 'none';
+    manicSymptoms.style.display = 'none';
+    aggressivenessScale.style.display = 'none';
+    irritabilityScale.style.display = 'none';
+    moodStabilityCheck.style.display = 'none';
+
+    // Показать соответствующие секции
+    if (mood === 'depressive') {
+        depressiveSymptoms.style.display = 'block';
+        aggressivenessScale.style.display = 'block';
+    } else if (mood === 'manic') {
+        manicSymptoms.style.display = 'block';
+        irritabilityScale.style.display = 'block';
+    } else if (mood === 'interfase') {
+        moodStabilityCheck.style.display = 'block';
+    }
+}
+
 // Сохранение новой записи
 async function saveEntry() {
     if (!currentMood) {
@@ -107,12 +165,52 @@ async function saveEntry() {
     const intensity = document.getElementById('intensity').value;
     const notes = document.getElementById('notes').value.trim();
 
+    // Собираем симптомы депрессии
+    const depressiveSymptoms = {
+        insomnia: document.querySelector('input[name="depressive-insomnia"]')?.checked || false,
+        oversleeping: document.querySelector('input[name="depressive-oversleeping"]')?.checked || false,
+        energyLoss: document.querySelector('input[name="depressive-energyLoss"]')?.checked || false,
+        lossOfInterest: document.querySelector('input[name="depressive-lossOfInterest"]')?.checked || false,
+        suicidalThoughts: document.querySelector('input[name="depressive-suicidalThoughts"]')?.checked || false,
+        appetiteChanges: document.querySelector('input[name="depressive-appetiteChanges"]')?.checked || false
+    };
+
+    // Собираем симптомы мании
+    const manicSymptoms = {
+        reducedSleep: document.querySelector('input[name="manic-reducedSleep"]')?.checked || false,
+        rapidSpeech: document.querySelector('input[name="manic-rapidSpeech"]')?.checked || false,
+        racingThoughts: document.querySelector('input[name="manic-racingThoughts"]')?.checked || false,
+        impulsivity: document.querySelector('input[name="manic-impulsivity"]')?.checked || false,
+        excessiveSpending: document.querySelector('input[name="manic-excessiveSpending"]')?.checked || false
+    };
+
+    // Собираем триггеры
+    const triggers = {
+        stress: document.querySelector('input[name="trigger-stress"]')?.checked || false,
+        lackOfSleep: document.querySelector('input[name="trigger-lackOfSleep"]')?.checked || false,
+        conflict: document.querySelector('input[name="trigger-conflict"]')?.checked || false,
+        alcohol: document.querySelector('input[name="trigger-alcohol"]')?.checked || false,
+        seasonalChanges: document.querySelector('input[name="trigger-seasonalChanges"]')?.checked || false
+    };
+
     const entryData = {
         mood: currentMood,
         intensity: parseInt(intensity),
         notes: notes,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        depressiveSymptoms: depressiveSymptoms,
+        manicSymptoms: manicSymptoms,
+        triggers: triggers
     };
+
+    // Добавляем фазо-специфичные шкалы
+    if (currentMood === 'depressive') {
+        entryData.aggressiveness = parseInt(document.getElementById('aggressiveness').value);
+    } else if (currentMood === 'manic') {
+        entryData.irritability = parseInt(document.getElementById('irritability').value);
+    } else if (currentMood === 'interfase') {
+        entryData.moodStability = document.getElementById('moodStability')?.checked || false;
+    }
 
     try {
         const response = await fetch(`${API_URL}/entries`, {
@@ -132,6 +230,26 @@ async function saveEntry() {
             document.getElementById('intensity').value = 5;
             document.querySelector('.intensity-value').textContent = '5';
             document.getElementById('notes').value = '';
+            
+            // Сбросить чекбоксы
+            document.querySelectorAll('.symptom-checkbox, .trigger-checkbox').forEach(cb => cb.checked = false);
+            
+            // Сбросить шкалы
+            document.getElementById('aggressiveness').value = 5;
+            document.querySelector('.aggressiveness-value').textContent = '5';
+            document.getElementById('irritability').value = 5;
+            document.querySelector('.irritability-value').textContent = '5';
+            if (document.getElementById('moodStability')) {
+                document.getElementById('moodStability').checked = false;
+            }
+            
+            // Скрыть все секции
+            document.getElementById('depressiveSymptoms').style.display = 'none';
+            document.getElementById('manicSymptoms').style.display = 'none';
+            document.getElementById('aggressivenessScale').style.display = 'none';
+            document.getElementById('irritabilityScale').style.display = 'none';
+            document.getElementById('moodStabilityCheck').style.display = 'none';
+            
             currentMood = null;
 
             await loadEntries();
@@ -235,6 +353,55 @@ function renderEntries() {
         const formattedDate = formatDate(date);
         const moodInfo = getMoodInfo(entry.mood);
         
+        // Формируем список симптомов
+        let symptomsHtml = '';
+        if (entry.mood === 'depressive' && entry.depressiveSymptoms) {
+            const symptoms = [];
+            if (entry.depressiveSymptoms.insomnia) symptoms.push('Бессонница');
+            if (entry.depressiveSymptoms.oversleeping) symptoms.push('Пересып');
+            if (entry.depressiveSymptoms.energyLoss) symptoms.push('Упадок сил');
+            if (entry.depressiveSymptoms.lossOfInterest) symptoms.push('Потеря интереса');
+            if (entry.depressiveSymptoms.suicidalThoughts) symptoms.push('Суицидальные мысли');
+            if (entry.depressiveSymptoms.appetiteChanges) symptoms.push('Изменения аппетита');
+            if (symptoms.length > 0) {
+                symptomsHtml = `<div style="margin-top: 10px;"><strong>Симптомы:</strong> ${symptoms.join(', ')}</div>`;
+            }
+        } else if (entry.mood === 'manic' && entry.manicSymptoms) {
+            const symptoms = [];
+            if (entry.manicSymptoms.reducedSleep) symptoms.push('Сниженная потребность во сне');
+            if (entry.manicSymptoms.rapidSpeech) symptoms.push('Ускоренная речь');
+            if (entry.manicSymptoms.racingThoughts) symptoms.push('Скачки мыслей');
+            if (entry.manicSymptoms.impulsivity) symptoms.push('Повышенная импульсивность');
+            if (entry.manicSymptoms.excessiveSpending) symptoms.push('Траты денег');
+            if (symptoms.length > 0) {
+                symptomsHtml = `<div style="margin-top: 10px;"><strong>Симптомы:</strong> ${symptoms.join(', ')}</div>`;
+            }
+        }
+
+        // Формируем список триггеров
+        let triggersHtml = '';
+        if (entry.triggers) {
+            const triggers = [];
+            if (entry.triggers.stress) triggers.push('Стресс');
+            if (entry.triggers.lackOfSleep) triggers.push('Недосып');
+            if (entry.triggers.conflict) triggers.push('Конфликт');
+            if (entry.triggers.alcohol) triggers.push('Алкоголь');
+            if (entry.triggers.seasonalChanges) triggers.push('Сезонные изменения');
+            if (triggers.length > 0) {
+                triggersHtml = `<div style="margin-top: 10px;"><strong>Триггеры:</strong> ${triggers.join(', ')}</div>`;
+            }
+        }
+
+        // Фазо-специфичные шкалы
+        let scalesHtml = '';
+        if (entry.mood === 'depressive' && entry.aggressiveness) {
+            scalesHtml = `<div style="margin-top: 10px;"><strong>Агрессивность:</strong> ${entry.aggressiveness}/10</div>`;
+        } else if (entry.mood === 'manic' && entry.irritability) {
+            scalesHtml = `<div style="margin-top: 10px;"><strong>Раздражительность:</strong> ${entry.irritability}/10</div>`;
+        } else if (entry.mood === 'interfase' && entry.moodStability) {
+            scalesHtml = `<div style="margin-top: 10px;"><strong>✓</strong> Настроение не менялось</div>`;
+        }
+        
         return `
             <div class="entry-item ${entry.mood}">
                 <div class="entry-header">
@@ -251,7 +418,10 @@ function renderEntries() {
                     </div>
                     <span><strong>${entry.intensity}/10</strong></span>
                 </div>
-                ${entry.notes ? `<div class="entry-notes">${escapeHtml(entry.notes)}</div>` : ''}
+                ${symptomsHtml}
+                ${triggersHtml}
+                ${scalesHtml}
+                ${entry.notes ? `<div class="entry-notes" style="margin-top: 10px;">${escapeHtml(entry.notes)}</div>` : ''}
                 <button class="entry-delete" onclick="deleteEntry('${entry._id}')"><span class="pink-icon">✕</span> Удалить</button>
             </div>
         `;

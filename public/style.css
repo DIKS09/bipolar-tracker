@@ -274,6 +274,83 @@ body {
     z-index: 1;
 }
 
+/* Секции симптомов и триггеров */
+.symptoms-section,
+.triggers-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 182, 193, 0.05);
+    border-radius: 15px;
+    border: 2px solid var(--light-pink);
+}
+
+.symptoms-section h3,
+.triggers-section h3 {
+    color: var(--rose);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    font-weight: 500;
+}
+
+.checkbox-label:hover {
+    border-color: var(--rose);
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--rose);
+}
+
+.checkbox-label span {
+    flex: 1;
+    user-select: none;
+}
+
+/* Секция стабильности настроения */
+.mood-stability-section {
+    margin-bottom: 30px;
+    padding: 15px;
+    background: rgba(200, 230, 201, 0.1);
+    border-radius: 12px;
+    border: 2px solid var(--interfase-color);
+}
+
+/* Шкалы (агрессивность, раздражительность) */
+.scale-selector {
+    margin-bottom: 30px;
+}
+
+.scale-selector label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+}
+
 /* Интенсивность */
 .intensity-selector {
     margin-bottom: 30px;
@@ -293,7 +370,9 @@ body {
     gap: 20px;
 }
 
-#intensity {
+#intensity,
+#aggressiveness,
+#irritability {
     flex: 1;
     height: 8px;
     border-radius: 10px;
@@ -302,7 +381,9 @@ body {
     -webkit-appearance: none;
 }
 
-#intensity::-webkit-slider-thumb {
+#intensity::-webkit-slider-thumb,
+#aggressiveness::-webkit-slider-thumb,
+#irritability::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 24px;
     height: 24px;
@@ -313,12 +394,16 @@ body {
     transition: all 0.3s ease;
 }
 
-#intensity::-webkit-slider-thumb:hover {
+#intensity::-webkit-slider-thumb:hover,
+#aggressiveness::-webkit-slider-thumb:hover,
+#irritability::-webkit-slider-thumb:hover {
     transform: scale(1.2);
     box-shadow: 0 4px 12px var(--shadow-hover);
 }
 
-#intensity::-moz-range-thumb {
+#intensity::-moz-range-thumb,
+#aggressiveness::-moz-range-thumb,
+#irritability::-moz-range-thumb {
     width: 24px;
     height: 24px;
     border-radius: 50%;
@@ -329,12 +414,16 @@ body {
     border: none;
 }
 
-#intensity::-moz-range-thumb:hover {
+#intensity::-moz-range-thumb:hover,
+#aggressiveness::-moz-range-thumb:hover,
+#irritability::-moz-range-thumb:hover {
     transform: scale(1.2);
     box-shadow: 0 4px 12px var(--shadow-hover);
 }
 
-.intensity-value {
+.intensity-value,
+.aggressiveness-value,
+.irritability-value {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--rose);
@@ -796,6 +885,27 @@ body {
     .time-input {
         font-size: 0.95rem;
     }
+
+    /* Секции симптомов и триггеров */
+    .checkbox-group {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .checkbox-label {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .symptoms-section,
+    .triggers-section {
+        padding: 15px;
+    }
+    
+    .symptoms-section h3,
+    .triggers-section h3 {
+        font-size: 1rem;
+    }
     
     /* График */
     #moodChart {
@@ -1181,6 +1291,57 @@ body.dark-theme input:checked + .slider {
 body.dark-theme input[type="checkbox"] {
     background: rgba(30, 30, 50, 0.9);
     border: 2px solid rgba(255, 105, 180, 0.4);
+}
+
+/* Секции симптомов и триггеров в темной теме */
+body.dark-theme .symptoms-section,
+body.dark-theme .triggers-section {
+    background: rgba(30, 30, 50, 0.6);
+    border-color: rgba(179, 136, 255, 0.4);
+}
+
+body.dark-theme .symptoms-section h3,
+body.dark-theme .triggers-section h3 {
+    color: #b388ff;
+}
+
+body.dark-theme .checkbox-label {
+    background: rgba(30, 30, 50, 0.9);
+    color: #e0e0e0;
+}
+
+body.dark-theme .checkbox-label:hover {
+    border-color: #b388ff;
+    box-shadow: 0 2px 8px rgba(138, 43, 226, 0.3);
+}
+
+body.dark-theme .mood-stability-section {
+    background: rgba(30, 30, 50, 0.6);
+    border-color: rgba(200, 230, 201, 0.4);
+}
+
+body.dark-theme .scale-selector label {
+    color: #e0e0e0;
+}
+
+body.dark-theme .aggressiveness-value,
+body.dark-theme .irritability-value {
+    color: #b388ff;
+}
+
+body.dark-theme #aggressiveness,
+body.dark-theme #irritability {
+    background: linear-gradient(to right, rgba(138, 43, 226, 0.5), rgba(255, 138, 171, 0.7));
+}
+
+body.dark-theme #aggressiveness::-webkit-slider-thumb,
+body.dark-theme #irritability::-webkit-slider-thumb {
+    background: #ff8fab;
+}
+
+body.dark-theme #aggressiveness::-moz-range-thumb,
+body.dark-theme #irritability::-moz-range-thumb {
+    background: #ff8fab;
 }
 
 /* Страница авторизации в темной теме */

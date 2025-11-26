@@ -115,7 +115,9 @@ router.get('/:id', async (req, res) => {
 router.post('/', [
     body('mood').isIn(['depressive', 'interfase', 'manic']).withMessage('Укажите корректный тип настроения'),
     body('intensity').isInt({ min: 1, max: 10 }).withMessage('Интенсивность должна быть от 1 до 10'),
-    body('notes').optional().isLength({ max: 1000 }).withMessage('Заметки не должны превышать 1000 символов')
+    body('notes').optional().isLength({ max: 1000 }).withMessage('Заметки не должны превышать 1000 символов'),
+    body('aggressiveness').optional().isInt({ min: 1, max: 10 }).withMessage('Агрессивность должна быть от 1 до 10'),
+    body('irritability').optional().isInt({ min: 1, max: 10 }).withMessage('Раздражительность должна быть от 1 до 10')
 ], async (req, res) => {
     try {
         // Проверка валидации
@@ -127,14 +129,31 @@ router.post('/', [
             });
         }
 
-        const { mood, intensity, notes, date } = req.body;
+        const { 
+            mood, 
+            intensity, 
+            notes, 
+            date,
+            depressiveSymptoms,
+            manicSymptoms,
+            triggers,
+            aggressiveness,
+            irritability,
+            moodStability
+        } = req.body;
 
         const entry = await Entry.create({
             user: req.user._id,
             mood,
             intensity,
             notes: notes || '',
-            date: date || Date.now()
+            date: date || Date.now(),
+            depressiveSymptoms: depressiveSymptoms || {},
+            manicSymptoms: manicSymptoms || {},
+            triggers: triggers || {},
+            aggressiveness,
+            irritability,
+            moodStability
         });
 
         res.status(201).json({
@@ -157,7 +176,9 @@ router.post('/', [
 router.put('/:id', [
     body('mood').optional().isIn(['depressive', 'interfase', 'manic']).withMessage('Укажите корректный тип настроения'),
     body('intensity').optional().isInt({ min: 1, max: 10 }).withMessage('Интенсивность должна быть от 1 до 10'),
-    body('notes').optional().isLength({ max: 1000 }).withMessage('Заметки не должны превышать 1000 символов')
+    body('notes').optional().isLength({ max: 1000 }).withMessage('Заметки не должны превышать 1000 символов'),
+    body('aggressiveness').optional().isInt({ min: 1, max: 10 }).withMessage('Агрессивность должна быть от 1 до 10'),
+    body('irritability').optional().isInt({ min: 1, max: 10 }).withMessage('Раздражительность должна быть от 1 до 10')
 ], async (req, res) => {
     try {
         // Проверка валидации
