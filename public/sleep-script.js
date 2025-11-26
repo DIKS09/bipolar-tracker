@@ -500,18 +500,35 @@ function escapeHtml(text) {
 
 // Инициализация темной темы
 function initializeTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-theme');
-        document.getElementById('themeIcon').textContent = '☀️';
+    try {
+        const savedTheme = localStorage.getItem('theme');
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        
+        if (!themeToggleBtn || !themeIcon) {
+            console.warn('⚠️ Элементы темной темы не найдены');
+            return;
+        }
+        
+        // Применяем сохраненную тему
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeIcon.textContent = '☀️';
+        }
+        
+        // Обработчик клика
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            themeIcon.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            console.log('🌙 Тема изменена на:', isDark ? 'темную' : 'светлую');
+        });
+        
+        console.log('✅ Темная тема инициализирована');
+    } catch (error) {
+        console.error('❌ Ошибка инициализации темной темы:', error);
     }
-    
-    document.getElementById('themeToggle').addEventListener('click', () => {
-        document.body.classList.toggle('dark-theme');
-        const isDark = document.body.classList.contains('dark-theme');
-        document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    });
 
     // Цветовая тема
     initializeColorTheme();
@@ -519,64 +536,97 @@ function initializeTheme() {
 
 // Инициализация цветовых тем
 function initializeColorTheme() {
-    const savedColorTheme = localStorage.getItem('colorTheme') || 'pink';
-    applyColorTheme(savedColorTheme);
+    try {
+        const savedColorTheme = localStorage.getItem('colorTheme') || 'pink';
+        applyColorTheme(savedColorTheme);
 
-    const colorThemeBtn = document.getElementById('colorThemeToggle');
-    const colorModal = document.getElementById('colorModal');
-    const closeBtn = document.getElementById('closeColorModal');
+        const colorThemeBtn = document.getElementById('colorThemeToggle');
+        const colorModal = document.getElementById('colorModal');
+        const closeBtn = document.getElementById('closeColorModal');
 
-    if (!colorThemeBtn || !colorModal || !closeBtn) {
-        console.warn('Элементы цветовой темы не найдены');
-        return;
-    }
-
-    // Кнопка открытия модального окна
-    colorThemeBtn.addEventListener('click', () => {
-        colorModal.style.display = 'flex';
-    });
-
-    // Закрытие модального окна
-    closeBtn.addEventListener('click', () => {
-        colorModal.style.display = 'none';
-    });
-
-    // Клик вне модального окна
-    colorModal.addEventListener('click', (e) => {
-        if (e.target.id === 'colorModal') {
-            colorModal.style.display = 'none';
+        if (!colorThemeBtn || !colorModal || !closeBtn) {
+            console.warn('⚠️ Элементы цветовой темы не найдены:', {
+                colorThemeBtn: !!colorThemeBtn,
+                colorModal: !!colorModal,
+                closeBtn: !!closeBtn
+            });
+            return;
         }
-    });
 
-    // Выбор цветовой темы
-    document.querySelectorAll('.color-theme-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const theme = this.dataset.theme;
-            applyColorTheme(theme);
-            localStorage.setItem('colorTheme', theme);
-            colorModal.style.display = 'none';
-            showNotification(`Цветовая тема изменена!`, 'success');
+        // Кнопка открытия модального окна
+        colorThemeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            colorModal.style.display = 'flex';
+            console.log('🎨 Модальное окно цветовых тем открыто');
         });
-    });
+
+        // Закрытие модального окна
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            colorModal.style.display = 'none';
+            console.log('🎨 Модальное окно цветовых тем закрыто');
+        });
+
+        // Клик вне модального окна
+        colorModal.addEventListener('click', (e) => {
+            if (e.target.id === 'colorModal') {
+                colorModal.style.display = 'none';
+                console.log('🎨 Модальное окно закрыто (клик вне)');
+            }
+        });
+
+        // Выбор цветовой темы
+        const themeCards = document.querySelectorAll('.color-theme-card');
+        if (themeCards.length === 0) {
+            console.warn('⚠️ Карточки тем не найдены');
+            return;
+        }
+        
+        themeCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                const theme = this.dataset.theme;
+                console.log('🎨 Выбрана тема:', theme);
+                applyColorTheme(theme);
+                localStorage.setItem('colorTheme', theme);
+                colorModal.style.display = 'none';
+                showNotification(`Цветовая тема изменена на ${theme}!`, 'success');
+            });
+        });
+        
+        console.log('✅ Цветовые темы инициализированы, найдено карточек:', themeCards.length);
+    } catch (error) {
+        console.error('❌ Ошибка инициализации цветовых тем:', error);
+    }
 }
 
 // Применить цветовую тему
 function applyColorTheme(theme) {
-    // Удаляем все классы тем
-    document.body.classList.remove('theme-pink', 'theme-blue', 'theme-purple', 'theme-green', 'theme-orange', 'theme-teal');
-    
-    // Добавляем выбранную тему
-    if (theme !== 'pink') {
-        document.body.classList.add(`theme-${theme}`);
-    }
-
-    // Обновляем активную карточку
-    document.querySelectorAll('.color-theme-card').forEach(card => {
-        card.classList.remove('active');
-        if (card.dataset.theme === theme) {
-            card.classList.add('active');
+    try {
+        console.log('🎨 Применяем тему:', theme);
+        
+        // Удаляем все классы тем
+        document.body.classList.remove('theme-pink', 'theme-blue', 'theme-purple', 'theme-green', 'theme-orange', 'theme-teal');
+        
+        // Добавляем выбранную тему
+        if (theme !== 'pink') {
+            document.body.classList.add(`theme-${theme}`);
+            console.log('✅ Класс добавлен:', `theme-${theme}`);
+        } else {
+            console.log('✅ Применена розовая тема (по умолчанию)');
         }
-    });
+
+        // Обновляем активную карточку
+        document.querySelectorAll('.color-theme-card').forEach(card => {
+            card.classList.remove('active');
+            if (card.dataset.theme === theme) {
+                card.classList.add('active');
+                console.log('✅ Активная карточка:', theme);
+            }
+        });
+    } catch (error) {
+        console.error('❌ Ошибка применения темы:', error);
+    }
 }
 
 // Обновление графика при изменении размера окна
