@@ -12,6 +12,7 @@ let audioChunks = [];
 let audioBlob = null;
 let recordingStartTime = null;
 let recordingInterval = null;
+let audioDuration = 0;
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
@@ -165,16 +166,23 @@ async function toggleAudioRecording() {
 // Начать запись аудио
 async function startAudioRecording() {
     try {
+        console.log('🎤 Запрос доступа к микрофону...');
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log('✅ Доступ к микрофону получен');
+        
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (event) => {
+            console.log('📦 Получен кусок аудио:', event.data.size, 'bytes');
             audioChunks.push(event.data);
         };
 
         mediaRecorder.onstop = () => {
+            console.log('⏹️ Запись остановлена. Всего кусков:', audioChunks.length);
             audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            console.log('💾 Создан аудио blob:', audioBlob.size, 'bytes');
+            
             const audioUrl = URL.createObjectURL(audioBlob);
             document.getElementById('audioPlayer').src = audioUrl;
             document.getElementById('audioPreview').style.display = 'block';
@@ -185,6 +193,7 @@ async function startAudioRecording() {
 
         mediaRecorder.start();
         recordingStartTime = Date.now();
+        console.log('🔴 Запись началась в', new Date(recordingStartTime).toLocaleTimeString());
 
         // UI обновления
         document.getElementById('audioIcon').textContent = '⏹️';
@@ -202,14 +211,18 @@ async function startAudioRecording() {
 
         showNotification('Запись началась', 'info');
     } catch (error) {
-        console.error('Ошибка доступа к микрофону:', error);
-        showNotification('Не удалось получить доступ к микрофону', 'error');
+        console.error('❌ Ошибка доступа к микрофону:', error);
+        showNotification('Не удалось получить доступ к микрофону. Проверьте разрешения браузера.', 'error');
     }
 }
 
 // Остановить запись аудио
 function stopAudioRecording() {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        // Сохраняем длительность до остановки
+        audioDuration = Math.floor((Date.now() - recordingStartTime) / 1000);
+        console.log('⏱️ Длительность записи:', audioDuration, 'секунд');
+        
         mediaRecorder.stop();
         clearInterval(recordingInterval);
 
@@ -227,6 +240,7 @@ function stopAudioRecording() {
 // Удалить аудио-запись
 function deleteAudioRecording() {
     audioBlob = null;
+    audioDuration = 0;
     document.getElementById('audioPlayer').src = '';
     document.getElementById('audioPreview').style.display = 'none';
     showNotification('Аудио-запись удалена', 'info');
@@ -328,14 +342,18 @@ async function saveEntry() {
 
     // Добавляем аудио-запись, если есть
     if (audioBlob) {
+        console.log('🎵 Добавляем аудио к записи. Размер:', audioBlob.size, 'bytes, Длительность:', audioDuration, 'сек');
         try {
             const audioBase64 = await blobToBase64(audioBlob);
-            const audioDuration = Math.floor((Date.now() - recordingStartTime) / 1000);
+            console.log('✅ Аудио конвертировано в base64. Длина:', audioBase64.length, 'символов');
             entryData.audioNote = audioBase64;
             entryData.audioNoteDuration = audioDuration;
         } catch (error) {
-            console.error('Ошибка конвертации аудио:', error);
+            console.error('❌ Ошибка конвертации аудио:', error);
+            showNotification('Ошибка сохранения аудио', 'error');
         }
+    } else {
+        console.log('ℹ️ Аудио-запись отсутствует');
     }
 
     try {
@@ -378,6 +396,7 @@ async function saveEntry() {
             
             // Сбросить аудио
             audioBlob = null;
+            audioDuration = 0;
             document.getElementById('audioPlayer').src = '';
             document.getElementById('audioPreview').style.display = 'none';
             
