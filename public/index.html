@@ -21,6 +21,9 @@
                     <button onclick="location.href='/sleep.html'" class="btn-secondary" style="padding: 10px 20px;">
                         <span>😴 Трекер Сна</span>
                     </button>
+                    <button id="colorThemeToggle" class="btn-secondary" style="padding: 10px 20px;">
+                        <span id="colorThemeIcon">🎨</span>
+                    </button>
                     <button id="themeToggle" class="btn-secondary" style="padding: 10px 20px;">
                         <span id="themeIcon">🌙</span>
                     </button>
@@ -358,6 +361,42 @@
             <p><span class="pink-icon">♥</span> Забота о себе - это не эгоизм, это необходимость</p>
             <p class="disclaimer">Этот инструмент не заменяет профессиональную медицинскую помощь</p>
         </footer>
+    </div>
+
+    <!-- Модальное окно выбора цвета -->
+    <div id="colorModal" class="color-modal" style="display: none;">
+        <div class="color-modal-content">
+            <h3>Выберите цветовую тему</h3>
+            <div class="color-themes-grid">
+                <div class="color-theme-card" data-theme="pink">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #FFB6C1, #FF69B4);"></div>
+                    <div class="color-theme-name">Розовая 🌸</div>
+                </div>
+                <div class="color-theme-card" data-theme="blue">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #89CFF0, #4682B4);"></div>
+                    <div class="color-theme-name">Голубая 💙</div>
+                </div>
+                <div class="color-theme-card" data-theme="purple">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #D8BFD8, #9370DB);"></div>
+                    <div class="color-theme-name">Фиолетовая 💜</div>
+                </div>
+                <div class="color-theme-card" data-theme="green">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #90EE90, #32CD32);"></div>
+                    <div class="color-theme-name">Зелёная 💚</div>
+                </div>
+                <div class="color-theme-card" data-theme="orange">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #FFA07A, #FF8C00);"></div>
+                    <div class="color-theme-name">Оранжевая 🧡</div>
+                </div>
+                <div class="color-theme-card" data-theme="teal">
+                    <div class="color-preview" style="background: linear-gradient(135deg, #40E0D0, #008B8B);"></div>
+                    <div class="color-theme-name">Бирюзовая 🩵</div>
+                </div>
+            </div>
+            <button id="closeColorModal" class="btn-secondary" style="margin-top: 20px; width: 100%;">
+                <span>Закрыть</span>
+            </button>
+        </div>
     </div>
 
     <!-- jsPDF библиотека для генерации PDF -->

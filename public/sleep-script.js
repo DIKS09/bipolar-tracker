@@ -512,6 +512,62 @@ function initializeTheme() {
         document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     });
+
+    // Цветовая тема
+    initializeColorTheme();
+}
+
+// Инициализация цветовых тем
+function initializeColorTheme() {
+    const savedColorTheme = localStorage.getItem('colorTheme') || 'pink';
+    applyColorTheme(savedColorTheme);
+
+    // Кнопка открытия модального окна
+    document.getElementById('colorThemeToggle').addEventListener('click', () => {
+        document.getElementById('colorModal').style.display = 'flex';
+    });
+
+    // Закрытие модального окна
+    document.getElementById('closeColorModal').addEventListener('click', () => {
+        document.getElementById('colorModal').style.display = 'none';
+    });
+
+    // Клик вне модального окна
+    document.getElementById('colorModal').addEventListener('click', (e) => {
+        if (e.target.id === 'colorModal') {
+            document.getElementById('colorModal').style.display = 'none';
+        }
+    });
+
+    // Выбор цветовой темы
+    document.querySelectorAll('.color-theme-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const theme = this.dataset.theme;
+            applyColorTheme(theme);
+            localStorage.setItem('colorTheme', theme);
+            document.getElementById('colorModal').style.display = 'none';
+            showNotification(`Цветовая тема изменена!`, 'success');
+        });
+    });
+}
+
+// Применить цветовую тему
+function applyColorTheme(theme) {
+    // Удаляем все классы тем
+    document.body.classList.remove('theme-pink', 'theme-blue', 'theme-purple', 'theme-green', 'theme-orange', 'theme-teal');
+    
+    // Добавляем выбранную тему
+    if (theme !== 'pink') {
+        document.body.classList.add(`theme-${theme}`);
+    }
+
+    // Обновляем активную карточку
+    document.querySelectorAll('.color-theme-card').forEach(card => {
+        card.classList.remove('active');
+        if (card.dataset.theme === theme) {
+            card.classList.add('active');
+        }
+    });
 }
 
 // Обновление графика при изменении размера окна
