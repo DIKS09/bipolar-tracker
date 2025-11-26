@@ -173,6 +173,23 @@
                 <div class="notes-section">
                     <label for="notes">Заметки:</label>
                     <textarea id="notes" placeholder="Опишите ваше состояние, события дня, триггеры..."></textarea>
+                    
+                    <!-- Аудио-запись -->
+                    <div class="audio-recorder">
+                        <button type="button" id="audioRecordBtn" class="audio-btn">
+                            <span id="audioIcon">🎤</span>
+                            <span id="audioText">Записать голосовую заметку</span>
+                        </button>
+                        <div id="audioTimer" style="display: none; margin-top: 10px; font-weight: 600; color: var(--rose); text-align: center;">
+                            <span id="recordingTime">00:00</span>
+                        </div>
+                        <div id="audioPreview" style="display: none; margin-top: 15px;">
+                            <audio id="audioPlayer" controls style="width: 100%; border-radius: 10px;"></audio>
+                            <button type="button" id="audioDeleteBtn" class="audio-delete-btn" style="margin-top: 10px;">
+                                <span>🗑️ Удалить запись</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <button class="btn-primary" id="saveEntry">
@@ -226,6 +243,63 @@
                 </div>
             </section>
 
+            <!-- Продвинутая аналитика -->
+            <section class="advanced-analytics card slide-up" style="animation-delay: 0.175s;">
+                <h2><span class="pink-icon">📊</span> Продвинутая аналитика</h2>
+                
+                <!-- Длительность эпизодов -->
+                <div class="analytics-section">
+                    <h3><span class="pink-icon">⏱️</span> Средняя продолжительность эпизодов</h3>
+                    <div class="analytics-grid">
+                        <div class="analytics-item">
+                            <div class="analytics-icon">🌧️</div>
+                            <div class="analytics-content">
+                                <div class="analytics-value" id="avgDepressiveDuration">-</div>
+                                <div class="analytics-label">Депрессивная фаза (дней)</div>
+                            </div>
+                        </div>
+                        <div class="analytics-item">
+                            <div class="analytics-icon">⚡</div>
+                            <div class="analytics-content">
+                                <div class="analytics-value" id="avgManicDuration">-</div>
+                                <div class="analytics-label">Маниакальная фаза (дней)</div>
+                            </div>
+                        </div>
+                        <div class="analytics-item">
+                            <div class="analytics-icon">🌤️</div>
+                            <div class="analytics-content">
+                                <div class="analytics-value" id="avgInterfaseDuration">-</div>
+                                <div class="analytics-label">Интерфаза (дней)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Анализ триггеров -->
+                <div class="analytics-section">
+                    <h3><span class="pink-icon">🎯</span> Самые частые триггеры</h3>
+                    <div id="triggerAnalysis" class="trigger-analysis"></div>
+                </div>
+
+                <!-- Анализ симптомов -->
+                <div class="analytics-section">
+                    <h3><span class="pink-icon">💊</span> Самые частые симптомы</h3>
+                    <div id="symptomAnalysis" class="symptom-analysis"></div>
+                </div>
+
+                <!-- Сезонные паттерны -->
+                <div class="analytics-section">
+                    <h3><span class="pink-icon">🗓️</span> Сезонные паттерны</h3>
+                    <div id="seasonalPatterns" class="seasonal-patterns"></div>
+                </div>
+
+                <!-- Корреляция сна и настроения -->
+                <div class="analytics-section">
+                    <h3><span class="pink-icon">😴</span> Корреляция сна и настроения</h3>
+                    <div id="sleepMoodCorrelation" class="correlation-info"></div>
+                </div>
+            </section>
+
             <!-- График настроения -->
             <section class="mood-chart card slide-up" style="animation-delay: 0.2s;">
                 <h2><span class="pink-icon">⟨⟩</span> График настроения (последние 30 дней)</h2>
@@ -246,6 +320,17 @@
                 <div class="entries-list" id="entriesList">
                     <div class="empty-state">
                         <p><span class="pink-icon">✎</span> Пока нет записей. Добавьте первую запись выше!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Система раннего предупреждения -->
+            <section class="early-warning card slide-up" style="animation-delay: 0.33s;">
+                <h2><span class="pink-icon">⚡</span> Система раннего предупреждения</h2>
+                <div id="earlyWarningContainer">
+                    <div class="pattern-alert" style="padding: 15px; border-radius: 12px; background: #e3f2fd; border-left: 4px solid #2196F3;">
+                        <div style="font-weight: 600; margin-bottom: 5px;">Анализируем паттерны...</div>
+                        <div style="font-size: 0.9rem; color: var(--text-light);">Добавьте больше записей для прогнозирования</div>
                     </div>
                 </div>
             </section>
@@ -272,10 +357,69 @@
                 </div>
             </section>
 
+            <!-- Интеграция с носимыми устройствами -->
+            <section class="wearables-section card slide-up" style="animation-delay: 0.39s;">
+                <h2><span class="pink-icon">🔗</span> Носимые устройства</h2>
+                <p style="color: var(--text-light); margin-bottom: 20px;">Синхронизируйте данные о сне, активности и пульсе с вашего устройства</p>
+                
+                <div class="wearables-grid">
+                    <!-- Google Fit -->
+                    <div class="wearable-card">
+                        <div class="wearable-icon">📱</div>
+                        <div class="wearable-name">Google Fit</div>
+                        <div class="wearable-status disconnected">Не подключено</div>
+                        <button class="wearable-btn" data-device="googlefit">
+                            <span>Подключить</span>
+                        </button>
+                    </div>
+
+                    <!-- Fitbit -->
+                    <div class="wearable-card">
+                        <div class="wearable-icon">⌚</div>
+                        <div class="wearable-name">Fitbit</div>
+                        <div class="wearable-status disconnected">Не подключено</div>
+                        <button class="wearable-btn" data-device="fitbit">
+                            <span>Подключить</span>
+                        </button>
+                    </div>
+
+                    <!-- Apple Health -->
+                    <div class="wearable-card">
+                        <div class="wearable-icon">🍎</div>
+                        <div class="wearable-name">Apple Health</div>
+                        <div class="wearable-status disconnected">Не подключено</div>
+                        <button class="wearable-btn" data-device="applehealth">
+                            <span>Подключить</span>
+                        </button>
+                    </div>
+
+                    <!-- Samsung Health -->
+                    <div class="wearable-card">
+                        <div class="wearable-icon">🏃</div>
+                        <div class="wearable-name">Samsung Health</div>
+                        <div class="wearable-status disconnected">Не подключено</div>
+                        <button class="wearable-btn" data-device="samsunghealth">
+                            <span>Подключить</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="wearablesInfo" style="margin-top: 20px; padding: 15px; background: rgba(33, 150, 243, 0.1); border-radius: 12px; border-left: 4px solid #2196F3;">
+                    <div style="font-weight: 600; margin-bottom: 5px;">ℹ️ В разработке</div>
+                    <div style="font-size: 0.9rem; color: var(--text-dark);">
+                        Интеграция с носимыми устройствами находится в активной разработке. 
+                        Скоро вы сможете автоматически синхронизировать данные о сне, пульсе и активности для более точного анализа связи с вашим настроением.
+                    </div>
+                </div>
+            </section>
+
             <!-- Экспорт данных -->
             <section class="export-section card slide-up" style="animation-delay: 0.4s;">
                 <h2><span class="pink-icon">▣</span> Управление данными</h2>
                 <div class="export-buttons">
+                    <button class="btn-secondary" id="exportPDF">
+                        <span><span class="pink-icon">📄</span> Отчет для врача (PDF)</span>
+                    </button>
                     <button class="btn-secondary" id="exportData">
                         <span><span class="pink-icon">↓</span> Экспорт данных (JSON)</span>
                     </button>
@@ -289,6 +433,8 @@
         </footer>
     </div>
 
+    <!-- jsPDF библиотека для генерации PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="api-script.js"></script>
 </body>
 </html>

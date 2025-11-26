@@ -6,6 +6,13 @@ let entries = [];
 let token = null;
 let currentUser = null;
 
+// Аудио-рекордер
+let mediaRecorder = null;
+let audioChunks = [];
+let audioBlob = null;
+let recordingStartTime = null;
+let recordingInterval = null;
+
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
@@ -124,8 +131,115 @@ function initializeEventListeners() {
     // Экспорт данных
     document.getElementById('exportData').addEventListener('click', exportData);
     
+    // Экспорт PDF
+    document.getElementById('exportPDF').addEventListener('click', exportPDF);
+    
     // Выход
     document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // Аудио-рекордер
+    initializeAudioRecorder();
+
+    // Носимые устройства
+    initializeWearables();
+}
+
+// Инициализация аудио-рекордера
+function initializeAudioRecorder() {
+    const recordBtn = document.getElementById('audioRecordBtn');
+    const deleteBtn = document.getElementById('audioDeleteBtn');
+
+    recordBtn.addEventListener('click', toggleAudioRecording);
+    deleteBtn.addEventListener('click', deleteAudioRecording);
+}
+
+// Переключение записи аудио
+async function toggleAudioRecording() {
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        await startAudioRecording();
+    } else {
+        stopAudioRecording();
+    }
+}
+
+// Начать запись аудио
+async function startAudioRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            document.getElementById('audioPlayer').src = audioUrl;
+            document.getElementById('audioPreview').style.display = 'block';
+            
+            // Останавливаем все треки
+            stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorder.start();
+        recordingStartTime = Date.now();
+
+        // UI обновления
+        document.getElementById('audioIcon').textContent = '⏹️';
+        document.getElementById('audioText').textContent = 'Остановить запись';
+        document.getElementById('audioRecordBtn').classList.add('recording');
+        document.getElementById('audioTimer').style.display = 'block';
+
+        // Таймер
+        recordingInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('recordingTime').textContent = `${minutes}:${seconds}`;
+        }, 1000);
+
+        showNotification('Запись началась', 'info');
+    } catch (error) {
+        console.error('Ошибка доступа к микрофону:', error);
+        showNotification('Не удалось получить доступ к микрофону', 'error');
+    }
+}
+
+// Остановить запись аудио
+function stopAudioRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        clearInterval(recordingInterval);
+
+        // UI обновления
+        document.getElementById('audioIcon').textContent = '🎤';
+        document.getElementById('audioText').textContent = 'Записать голосовую заметку';
+        document.getElementById('audioRecordBtn').classList.remove('recording');
+        document.getElementById('audioTimer').style.display = 'none';
+        document.getElementById('recordingTime').textContent = '00:00';
+
+        showNotification('Запись сохранена', 'success');
+    }
+}
+
+// Удалить аудио-запись
+function deleteAudioRecording() {
+    audioBlob = null;
+    document.getElementById('audioPlayer').src = '';
+    document.getElementById('audioPreview').style.display = 'none';
+    showNotification('Аудио-запись удалена', 'info');
+}
+
+// Конвертация Blob в Base64
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
 }
 
 // Обновление секций симптомов в зависимости от выбранной фазы
@@ -212,6 +326,18 @@ async function saveEntry() {
         entryData.moodStability = document.getElementById('moodStability')?.checked || false;
     }
 
+    // Добавляем аудио-запись, если есть
+    if (audioBlob) {
+        try {
+            const audioBase64 = await blobToBase64(audioBlob);
+            const audioDuration = Math.floor((Date.now() - recordingStartTime) / 1000);
+            entryData.audioNote = audioBase64;
+            entryData.audioNoteDuration = audioDuration;
+        } catch (error) {
+            console.error('Ошибка конвертации аудио:', error);
+        }
+    }
+
     try {
         const response = await fetch(`${API_URL}/entries`, {
             method: 'POST',
@@ -249,6 +375,11 @@ async function saveEntry() {
             document.getElementById('aggressivenessScale').style.display = 'none';
             document.getElementById('irritabilityScale').style.display = 'none';
             document.getElementById('moodStabilityCheck').style.display = 'none';
+            
+            // Сбросить аудио
+            audioBlob = null;
+            document.getElementById('audioPlayer').src = '';
+            document.getElementById('audioPreview').style.display = 'none';
             
             currentMood = null;
 
@@ -292,6 +423,8 @@ function updateUI() {
     renderEntries();
     drawChart();
     analyzePatterns();
+    updateAdvancedAnalytics();
+    analyzeEarlyWarning();
 }
 
 // Обновление статистики
@@ -401,6 +534,21 @@ function renderEntries() {
         } else if (entry.mood === 'interfase' && entry.moodStability) {
             scalesHtml = `<div style="margin-top: 10px;"><strong>✓</strong> Настроение не менялось</div>`;
         }
+
+        // Аудио-запись
+        let audioHtml = '';
+        if (entry.audioNote) {
+            const duration = entry.audioNoteDuration ? formatDuration(entry.audioNoteDuration) : '';
+            audioHtml = `
+                <div style="margin-top: 10px;">
+                    <strong>🎤 Голосовая заметка ${duration}</strong>
+                    <audio controls style="width: 100%; margin-top: 5px; border-radius: 8px;" preload="none">
+                        <source src="${entry.audioNote}" type="audio/webm">
+                        Ваш браузер не поддерживает аудио.
+                    </audio>
+                </div>
+            `;
+        }
         
         return `
             <div class="entry-item ${entry.mood}">
@@ -422,10 +570,19 @@ function renderEntries() {
                 ${triggersHtml}
                 ${scalesHtml}
                 ${entry.notes ? `<div class="entry-notes" style="margin-top: 10px;">${escapeHtml(entry.notes)}</div>` : ''}
+                ${audioHtml}
                 <button class="entry-delete" onclick="deleteEntry('${entry._id}')"><span class="pink-icon">✕</span> Удалить</button>
             </div>
         `;
     }).join('');
+}
+
+// Форматирование длительности аудио
+function formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `(${mins}:${secs.toString().padStart(2, '0')})`;
+}
 }
 
 // Получение информации о настроении
@@ -655,6 +812,230 @@ function exportData() {
     link.click();
     URL.revokeObjectURL(url);
     showNotification('Данные экспортированы!', 'success');
+}
+
+// Экспорт PDF отчета для врача
+async function exportPDF() {
+    if (entries.length === 0) {
+        showNotification('Нет данных для экспорта', 'error');
+        return;
+    }
+
+    showNotification('Генерация PDF отчета...', 'info');
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 20;
+
+        // Заголовок
+        doc.setFontSize(20);
+        doc.text('Отчет о настроении', 105, y, { align: 'center' });
+        y += 10;
+
+        doc.setFontSize(10);
+        doc.text(`Пациент: ${currentUser.username}`, 105, y, { align: 'center' });
+        y += 5;
+        doc.text(`Период: ${formatDate(new Date(entries[entries.length - 1].date))} - ${formatDate(new Date(entries[0].date))}`, 105, y, { align: 'center' });
+        y += 5;
+        doc.text(`Дата создания отчета: ${new Date().toLocaleDateString('ru-RU')}`, 105, y, { align: 'center' });
+        y += 15;
+
+        // Линия
+        doc.setDrawColor(255, 105, 180);
+        doc.setLineWidth(0.5);
+        doc.line(20, y, 190, y);
+        y += 10;
+
+        // Общая статистика
+        doc.setFontSize(14);
+        doc.setTextColor(255, 105, 180);
+        doc.text('Общая статистика', 20, y);
+        y += 8;
+
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        const depressiveCount = entries.filter(e => e.mood === 'depressive').length;
+        const manicCount = entries.filter(e => e.mood === 'manic').length;
+        const interfaseCount = entries.filter(e => e.mood === 'interfase').length;
+        const avgIntensity = (entries.reduce((sum, e) => sum + e.intensity, 0) / entries.length).toFixed(1);
+
+        doc.text(`Всего записей: ${entries.length}`, 20, y);
+        y += 6;
+        doc.text(`Депрессивных дней: ${depressiveCount} (${(depressiveCount / entries.length * 100).toFixed(0)}%)`, 20, y);
+        y += 6;
+        doc.text(`Маниакальных дней: ${manicCount} (${(manicCount / entries.length * 100).toFixed(0)}%)`, 20, y);
+        y += 6;
+        doc.text(`Дней интерфазы: ${interfaseCount} (${interfaseCount / entries.length * 100).toFixed(0)}%)`, 20, y);
+        y += 6;
+        doc.text(`Средняя интенсивность симптомов: ${avgIntensity}/10`, 20, y);
+        y += 12;
+
+        // Средняя продолжительность эпизодов
+        doc.setFontSize(14);
+        doc.setTextColor(255, 105, 180);
+        doc.text('Средняя продолжительность эпизодов', 20, y);
+        y += 8;
+
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        const avgDepDuration = document.getElementById('avgDepressiveDuration').textContent;
+        const avgManDuration = document.getElementById('avgManicDuration').textContent;
+        const avgIntDuration = document.getElementById('avgInterfaseDuration').textContent;
+
+        doc.text(`Депрессивная фаза: ${avgDepDuration} дней`, 20, y);
+        y += 6;
+        doc.text(`Маниакальная фаза: ${avgManDuration} дней`, 20, y);
+        y += 6;
+        doc.text(`Интерфаза: ${avgIntDuration} дней`, 20, y);
+        y += 12;
+
+        // Самые частые триггеры
+        doc.setFontSize(14);
+        doc.setTextColor(255, 105, 180);
+        doc.text('Самые частые триггеры', 20, y);
+        y += 8;
+
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        const triggerCounts = {
+            stress: 0, lackOfSleep: 0, conflict: 0, alcohol: 0, seasonalChanges: 0
+        };
+        const triggerNames = {
+            stress: 'Стресс', lackOfSleep: 'Недосып', conflict: 'Конфликт',
+            alcohol: 'Алкоголь', seasonalChanges: 'Сезонные изменения'
+        };
+
+        entries.forEach(entry => {
+            if (entry.triggers) {
+                Object.keys(entry.triggers).forEach(trigger => {
+                    if (entry.triggers[trigger]) triggerCounts[trigger]++;
+                });
+            }
+        });
+
+        const sortedTriggers = Object.entries(triggerCounts)
+            .filter(([_, count]) => count > 0)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+
+        if (sortedTriggers.length > 0) {
+            sortedTriggers.forEach(([trigger, count]) => {
+                doc.text(`${triggerNames[trigger]}: ${count} раз`, 20, y);
+                y += 6;
+            });
+        } else {
+            doc.text('Триггеры не отмечены', 20, y);
+            y += 6;
+        }
+        y += 6;
+
+        // Самые частые симптомы
+        if (y > 250) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.setFontSize(14);
+        doc.setTextColor(255, 105, 180);
+        doc.text('Самые частые симптомы', 20, y);
+        y += 8;
+
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        const symptomCounts = {};
+        const symptomNames = {
+            insomnia: 'Бессонница', oversleeping: 'Пересып', energyLoss: 'Упадок сил',
+            lossOfInterest: 'Потеря интереса', suicidalThoughts: 'Суицидальные мысли',
+            appetiteChanges: 'Изменения аппетита', reducedSleep: 'Сниженная потребность во сне',
+            rapidSpeech: 'Ускоренная речь', racingThoughts: 'Скачки мыслей',
+            impulsivity: 'Импульсивность', excessiveSpending: 'Траты денег'
+        };
+
+        entries.forEach(entry => {
+            if (entry.depressiveSymptoms) {
+                Object.keys(entry.depressiveSymptoms).forEach(symptom => {
+                    if (entry.depressiveSymptoms[symptom]) {
+                        symptomCounts[symptom] = (symptomCounts[symptom] || 0) + 1;
+                    }
+                });
+            }
+            if (entry.manicSymptoms) {
+                Object.keys(entry.manicSymptoms).forEach(symptom => {
+                    if (entry.manicSymptoms[symptom]) {
+                        symptomCounts[symptom] = (symptomCounts[symptom] || 0) + 1;
+                    }
+                });
+            }
+        });
+
+        const sortedSymptoms = Object.entries(symptomCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10);
+
+        if (sortedSymptoms.length > 0) {
+            sortedSymptoms.forEach(([symptom, count]) => {
+                if (y > 280) {
+                    doc.addPage();
+                    y = 20;
+                }
+                const percentage = (count / entries.length * 100).toFixed(0);
+                doc.text(`${symptomNames[symptom]}: ${count} раз (${percentage}%)`, 20, y);
+                y += 6;
+            });
+        } else {
+            doc.text('Симптомы не отмечены', 20, y);
+            y += 6;
+        }
+        y += 10;
+
+        // Последние записи
+        if (y > 200) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.setFontSize(14);
+        doc.setTextColor(255, 105, 180);
+        doc.text('Последние 10 записей', 20, y);
+        y += 8;
+
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        
+        const recentEntries = entries.slice(0, 10);
+        recentEntries.forEach(entry => {
+            if (y > 270) {
+                doc.addPage();
+                y = 20;
+            }
+
+            const moodInfo = getMoodInfo(entry.mood);
+            const date = new Date(entry.date).toLocaleDateString('ru-RU');
+            
+            doc.setFont(undefined, 'bold');
+            doc.text(`${date} - ${moodInfo.label} (${entry.intensity}/10)`, 20, y);
+            y += 5;
+            
+            doc.setFont(undefined, 'normal');
+            if (entry.notes) {
+                const lines = doc.splitTextToSize(entry.notes, 170);
+                lines.slice(0, 3).forEach(line => {
+                    doc.text(line, 20, y);
+                    y += 4;
+                });
+            }
+            y += 4;
+        });
+
+        // Сохранение файла
+        const filename = `mood-report-${currentUser.username}-${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(filename);
+        showNotification('PDF отчет создан!', 'success');
+    } catch (error) {
+        console.error('Ошибка создания PDF:', error);
+        showNotification('Ошибка создания PDF отчета', 'error');
+    }
 }
 
 // Выход из системы
@@ -971,6 +1352,602 @@ function checkAlerts() {
             </div>
         `).join('');
     }
+}
+
+// Продвинутая аналитика
+function updateAdvancedAnalytics() {
+    if (entries.length < 3) {
+        // Недостаточно данных
+        document.getElementById('avgDepressiveDuration').textContent = '-';
+        document.getElementById('avgManicDuration').textContent = '-';
+        document.getElementById('avgInterfaseDuration').textContent = '-';
+        document.getElementById('triggerAnalysis').innerHTML = '<p style="color: var(--text-light); text-align: center;">Недостаточно данных для анализа</p>';
+        document.getElementById('symptomAnalysis').innerHTML = '<p style="color: var(--text-light); text-align: center;">Недостаточно данных для анализа</p>';
+        document.getElementById('seasonalPatterns').innerHTML = '<p style="color: var(--text-light); text-align: center;">Недостаточно данных для анализа</p>';
+        document.getElementById('sleepMoodCorrelation').innerHTML = '<p class="correlation-text" style="color: var(--text-light);">Недостаточно данных для анализа корреляции</p>';
+        return;
+    }
+
+    // 1. Средняя продолжительность эпизодов
+    calculateEpisodeDurations();
+
+    // 2. Анализ триггеров
+    analyzeTriggers();
+
+    // 3. Анализ симптомов
+    analyzeSymptoms();
+
+    // 4. Сезонные паттерны
+    analyzeSeasonalPatterns();
+
+    // 5. Корреляция сна и настроения
+    analyzeSleepMoodCorrelation();
+}
+
+// Расчет средней продолжительности эпизодов
+function calculateEpisodeDurations() {
+    const sortedEntries = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    const episodes = {
+        depressive: [],
+        manic: [],
+        interfase: []
+    };
+
+    let currentEpisode = null;
+    let currentMood = null;
+    let episodeStart = null;
+
+    sortedEntries.forEach((entry, index) => {
+        const entryDate = new Date(entry.date);
+        
+        if (entry.mood !== currentMood) {
+            // Завершаем предыдущий эпизод
+            if (currentEpisode !== null && episodeStart !== null) {
+                const duration = Math.floor((entryDate - episodeStart) / (1000 * 60 * 60 * 24));
+                if (duration > 0) {
+                    episodes[currentMood].push(duration);
+                }
+            }
+            
+            // Начинаем новый эпизод
+            currentMood = entry.mood;
+            episodeStart = entryDate;
+            currentEpisode = 0;
+        }
+        
+        currentEpisode++;
+    });
+
+    // Завершаем последний эпизод
+    if (currentMood && episodeStart) {
+        const duration = Math.floor((new Date() - episodeStart) / (1000 * 60 * 60 * 24));
+        if (duration > 0) {
+            episodes[currentMood].push(duration);
+        }
+    }
+
+    // Вычисляем средние значения
+    const avgDepressive = episodes.depressive.length > 0 
+        ? (episodes.depressive.reduce((a, b) => a + b, 0) / episodes.depressive.length).toFixed(1)
+        : '-';
+    const avgManic = episodes.manic.length > 0 
+        ? (episodes.manic.reduce((a, b) => a + b, 0) / episodes.manic.length).toFixed(1)
+        : '-';
+    const avgInterfase = episodes.interfase.length > 0 
+        ? (episodes.interfase.reduce((a, b) => a + b, 0) / episodes.interfase.length).toFixed(1)
+        : '-';
+
+    document.getElementById('avgDepressiveDuration').textContent = avgDepressive;
+    document.getElementById('avgManicDuration').textContent = avgManic;
+    document.getElementById('avgInterfaseDuration').textContent = avgInterfase;
+}
+
+// Анализ триггеров
+function analyzeTriggers() {
+    const triggerCounts = {
+        stress: 0,
+        lackOfSleep: 0,
+        conflict: 0,
+        alcohol: 0,
+        seasonalChanges: 0
+    };
+
+    const triggerNames = {
+        stress: 'Стресс',
+        lackOfSleep: 'Недосып',
+        conflict: 'Конфликт',
+        alcohol: 'Алкоголь',
+        seasonalChanges: 'Сезонные изменения'
+    };
+
+    entries.forEach(entry => {
+        if (entry.triggers) {
+            Object.keys(entry.triggers).forEach(trigger => {
+                if (entry.triggers[trigger]) {
+                    triggerCounts[trigger]++;
+                }
+            });
+        }
+    });
+
+    const totalTriggers = Object.values(triggerCounts).reduce((a, b) => a + b, 0);
+    
+    if (totalTriggers === 0) {
+        document.getElementById('triggerAnalysis').innerHTML = '<p style="color: var(--text-light); text-align: center;">Триггеры не отмечены в записях</p>';
+        return;
+    }
+
+    // Сортируем по убыванию
+    const sortedTriggers = Object.entries(triggerCounts)
+        .filter(([_, count]) => count > 0)
+        .sort((a, b) => b[1] - a[1]);
+
+    const html = sortedTriggers.map(([trigger, count]) => {
+        const percentage = (count / totalTriggers * 100).toFixed(0);
+        return `
+            <div class="trigger-item">
+                <div>
+                    <div class="trigger-name">${triggerNames[trigger]}</div>
+                    <div class="trigger-bar">
+                        <div class="trigger-fill" style="width: ${percentage}%"></div>
+                    </div>
+                </div>
+                <div class="trigger-count">
+                    <span>${count}</span>
+                    <span style="font-size: 0.9rem; color: var(--text-light);">(${percentage}%)</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    document.getElementById('triggerAnalysis').innerHTML = html;
+}
+
+// Анализ симптомов
+function analyzeSymptoms() {
+    const symptomCounts = {};
+    const symptomNames = {
+        // Депрессия
+        insomnia: 'Бессонница',
+        oversleeping: 'Пересып',
+        energyLoss: 'Упадок сил',
+        lossOfInterest: 'Потеря интереса',
+        suicidalThoughts: 'Суицидальные мысли',
+        appetiteChanges: 'Изменения аппетита',
+        // Мания
+        reducedSleep: 'Сниженная потребность во сне',
+        rapidSpeech: 'Ускоренная речь',
+        racingThoughts: 'Скачки мыслей',
+        impulsivity: 'Импульсивность',
+        excessiveSpending: 'Траты денег'
+    };
+
+    entries.forEach(entry => {
+        if (entry.depressiveSymptoms) {
+            Object.keys(entry.depressiveSymptoms).forEach(symptom => {
+                if (entry.depressiveSymptoms[symptom]) {
+                    symptomCounts[symptom] = (symptomCounts[symptom] || 0) + 1;
+                }
+            });
+        }
+        if (entry.manicSymptoms) {
+            Object.keys(entry.manicSymptoms).forEach(symptom => {
+                if (entry.manicSymptoms[symptom]) {
+                    symptomCounts[symptom] = (symptomCounts[symptom] || 0) + 1;
+                }
+            });
+        }
+    });
+
+    const totalSymptoms = Object.values(symptomCounts).reduce((a, b) => a + b, 0);
+    
+    if (totalSymptoms === 0) {
+        document.getElementById('symptomAnalysis').innerHTML = '<p style="color: var(--text-light); text-align: center;">Симптомы не отмечены в записях</p>';
+        return;
+    }
+
+    // Топ-5 симптомов
+    const sortedSymptoms = Object.entries(symptomCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+    const html = sortedSymptoms.map(([symptom, count]) => {
+        const percentage = (count / entries.length * 100).toFixed(0);
+        return `
+            <div class="symptom-item">
+                <div>
+                    <div class="symptom-name">${symptomNames[symptom]}</div>
+                    <div class="symptom-bar">
+                        <div class="symptom-fill" style="width: ${percentage}%"></div>
+                    </div>
+                </div>
+                <div class="symptom-count">
+                    <span>${count}</span>
+                    <span style="font-size: 0.9rem; color: var(--text-light);">(${percentage}%)</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    document.getElementById('symptomAnalysis').innerHTML = html;
+}
+
+// Сезонные паттерны
+function analyzeSeasonalPatterns() {
+    const seasonMoods = {
+        winter: { depressive: 0, manic: 0, interfase: 0, name: 'Зима', icon: '❄️' },
+        spring: { depressive: 0, manic: 0, interfase: 0, name: 'Весна', icon: '🌸' },
+        summer: { depressive: 0, manic: 0, interfase: 0, name: 'Лето', icon: '☀️' },
+        fall: { depressive: 0, manic: 0, interfase: 0, name: 'Осень', icon: '🍂' }
+    };
+
+    entries.forEach(entry => {
+        const date = new Date(entry.date);
+        const month = date.getMonth();
+        let season;
+        
+        if (month >= 11 || month <= 1) season = 'winter';
+        else if (month >= 2 && month <= 4) season = 'spring';
+        else if (month >= 5 && month <= 7) season = 'summer';
+        else season = 'fall';
+
+        seasonMoods[season][entry.mood]++;
+    });
+
+    const html = Object.entries(seasonMoods).map(([season, data]) => {
+        const total = data.depressive + data.manic + data.interfase;
+        if (total === 0) return '';
+
+        let dominantMood = 'Интерфаза';
+        let maxCount = data.interfase;
+        
+        if (data.depressive > maxCount) {
+            dominantMood = 'Депрессивная';
+            maxCount = data.depressive;
+        }
+        if (data.manic > maxCount) {
+            dominantMood = 'Маниакальная';
+        }
+
+        return `
+            <div class="season-item">
+                <div class="season-icon">${data.icon}</div>
+                <div class="season-name">${data.name}</div>
+                <div class="season-mood">${dominantMood}</div>
+                <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 5px;">${total} записей</div>
+            </div>
+        `;
+    }).join('');
+
+    document.getElementById('seasonalPatterns').innerHTML = html || '<p style="color: var(--text-light); text-align: center;">Недостаточно данных</p>';
+}
+
+// Корреляция сна и настроения
+async function analyzeSleepMoodCorrelation() {
+    try {
+        // Пытаемся получить данные о сне
+        const sleepResponse = await fetch(`${API_URL}/sleep`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (sleepResponse.ok) {
+            const sleepData = await sleepResponse.json();
+            if (sleepData.success && sleepData.data.length > 0) {
+                const sleepEntries = sleepData.data;
+                
+                // Находим совпадающие даты
+                let correlationCount = 0;
+                let poorSleepDepression = 0;
+                let goodSleepStable = 0;
+
+                entries.forEach(entry => {
+                    const entryDate = new Date(entry.date).toDateString();
+                    const matchingSleep = sleepEntries.find(sleep => 
+                        new Date(sleep.date).toDateString() === entryDate
+                    );
+
+                    if (matchingSleep) {
+                        correlationCount++;
+                        
+                        if (matchingSleep.quality === 'poor' && entry.mood === 'depressive') {
+                            poorSleepDepression++;
+                        }
+                        if (matchingSleep.quality === 'good' && entry.mood === 'interfase') {
+                            goodSleepStable++;
+                        }
+                    }
+                });
+
+                if (correlationCount > 0) {
+                    const correlationPercent = ((poorSleepDepression + goodSleepStable) / correlationCount * 100).toFixed(0);
+                    
+                    document.getElementById('sleepMoodCorrelation').innerHTML = `
+                        <p class="correlation-text">
+                            Найдено <strong>${correlationCount}</strong> совпадающих записей.
+                        </p>
+                        <div class="correlation-value">${correlationPercent}% корреляция</div>
+                        <p class="correlation-text" style="font-size: 0.9rem;">
+                            • Плохой сон → Депрессия: ${poorSleepDepression} случаев<br>
+                            • Хороший сон → Стабильность: ${goodSleepStable} случаев
+                        </p>
+                    `;
+                } else {
+                    document.getElementById('sleepMoodCorrelation').innerHTML = `
+                        <p class="correlation-text">Нет совпадающих дат между записями настроения и сна</p>
+                    `;
+                }
+            } else {
+                document.getElementById('sleepMoodCorrelation').innerHTML = `
+                    <p class="correlation-text">Нет данных о сне. <a href="/sleep.html" style="color: var(--rose);">Начните отслеживать сон</a> для анализа корреляции.</p>
+                `;
+            }
+        } else {
+            throw new Error('Не удалось загрузить данные о сне');
+        }
+    } catch (error) {
+        console.error('Ошибка анализа корреляции сна:', error);
+        document.getElementById('sleepMoodCorrelation').innerHTML = `
+            <p class="correlation-text">Нет данных о сне. <a href="/sleep.html" style="color: var(--rose);">Начните отслеживать сон</a> для анализа корреляции.</p>
+        `;
+    }
+}
+
+// Система раннего предупреждения
+function analyzeEarlyWarning() {
+    const container = document.getElementById('earlyWarningContainer');
+    
+    if (entries.length < 7) {
+        container.innerHTML = `
+            <div class="pattern-alert" style="padding: 15px; border-radius: 12px; background: #e3f2fd; border-left: 4px solid #2196F3;">
+                <div style="font-weight: 600; margin-bottom: 5px;">📊 Недостаточно данных</div>
+                <div style="font-size: 0.9rem; color: var(--text-light);">Добавьте минимум 7 записей для активации системы раннего предупреждения</div>
+            </div>
+        `;
+        return;
+    }
+
+    const warnings = [];
+    const last7Days = entries.slice(0, 7);
+    const last3Days = entries.slice(0, 3);
+    
+    // 1. Анализ изменения интенсивности
+    const recentIntensities = last3Days.map(e => e.intensity);
+    const avgRecentIntensity = recentIntensities.reduce((a, b) => a + b, 0) / recentIntensities.length;
+    const previousIntensities = entries.slice(3, 10).map(e => e.intensity);
+    const avgPreviousIntensity = previousIntensities.length > 0 
+        ? previousIntensities.reduce((a, b) => a + b, 0) / previousIntensities.length 
+        : avgRecentIntensity;
+
+    if (avgRecentIntensity > avgPreviousIntensity + 2) {
+        warnings.push({
+            type: 'warning',
+            icon: '📈',
+            title: 'Резкое усиление симптомов',
+            message: `Интенсивность симптомов выросла с ${avgPreviousIntensity.toFixed(1)} до ${avgRecentIntensity.toFixed(1)}. Возможно начало эпизода.`,
+            recommendations: ['Свяжитесь с врачом', 'Соблюдайте режим сна', 'Избегайте триггеров'],
+            color: '#FF9800'
+        });
+    }
+
+    // 2. Анализ изменения настроения
+    const recentMoods = last3Days.map(e => e.mood);
+    const moodChanged = recentMoods[0] !== recentMoods[1] || recentMoods[1] !== recentMoods[2];
+    const currentMoodType = recentMoods[0];
+    
+    // Если было стабильно, но начало меняться
+    const previous4to7 = entries.slice(3, 7).map(e => e.mood);
+    const wasStable = previous4to7.every(m => m === 'interfase');
+    
+    if (wasStable && currentMoodType !== 'interfase') {
+        warnings.push({
+            type: 'warning',
+            icon: '⚠️',
+            title: 'Выход из интерфазы',
+            message: `Обнаружен переход из стабильного периода в ${currentMoodType === 'depressive' ? 'депрессивную' : 'маниакальную'} фазу.`,
+            recommendations: [
+                'Немедленно свяжитесь с врачом',
+                'Пересмотрите терапию',
+                'Избегайте стрессовых ситуаций'
+            ],
+            color: '#f44336'
+        });
+    }
+
+    // 3. Анализ паттерна симптомов
+    if (currentMoodType === 'depressive') {
+        const suicidalThoughtsCount = last7Days.filter(e => 
+            e.depressiveSymptoms && e.depressiveSymptoms.suicidalThoughts
+        ).length;
+        
+        if (suicidalThoughtsCount >= 2) {
+            warnings.push({
+                type: 'critical',
+                icon: '🚨',
+                title: 'КРИТИЧЕСКОЕ: Суицидальные мысли',
+                message: `Обнаружены суицидальные мысли в ${suicidalThoughtsCount} записях за последнюю неделю.`,
+                recommendations: [
+                    'НЕМЕДЛЕННО свяжитесь с врачом или психиатром',
+                    'Позвоните на горячую линию: 8-800-2000-122',
+                    'Не оставайтесь в одиночестве',
+                    'Обратитесь к близким за поддержкой'
+                ],
+                color: '#d32f2f'
+            });
+        }
+
+        const sleepIssues = last3Days.filter(e => 
+            e.depressiveSymptoms && (e.depressiveSymptoms.insomnia || e.depressiveSymptoms.oversleeping)
+        ).length;
+        
+        if (sleepIssues === 3) {
+            warnings.push({
+                type: 'warning',
+                icon: '😴',
+                title: 'Проблемы со сном 3 дня подряд',
+                message: 'Нарушения сна могут усугубить депрессивное состояние.',
+                recommendations: [
+                    'Соблюдайте гигиену сна',
+                    'Избегайте кофеина после 15:00',
+                    'Проконсультируйтесь о корректировке препаратов'
+                ],
+                color: '#FF6F00'
+            });
+        }
+    }
+
+    if (currentMoodType === 'manic') {
+        const reducedSleepCount = last3Days.filter(e => 
+            e.manicSymptoms && e.manicSymptoms.reducedSleep
+        ).length;
+        
+        if (reducedSleepCount >= 2) {
+            warnings.push({
+                type: 'warning',
+                icon: '⚡',
+                title: 'Сниженная потребность во сне',
+                message: 'Признак маниакального эпизода. Недостаток сна может усилить манию.',
+                recommendations: [
+                    'Свяжитесь с врачом для корректировки лечения',
+                    'Принимайте препараты строго по графику',
+                    'Избегайте стимуляторов (кофеин, энергетики)',
+                    'Придерживайтесь режима отхода ко сну'
+                ],
+                color: '#FF9800'
+            });
+        }
+
+        const impulsivityCount = last3Days.filter(e => 
+            e.manicSymptoms && (e.manicSymptoms.impulsivity || e.manicSymptoms.excessiveSpending)
+        ).length;
+        
+        if (impulsivityCount >= 2) {
+            warnings.push({
+                type: 'warning',
+                icon: '💸',
+                title: 'Импульсивное поведение',
+                message: 'Повышенная импульсивность и траты - признаки мании.',
+                recommendations: [
+                    'Ограничьте доступ к крупным суммам денег',
+                    'Попросите близких помочь контролировать финансы',
+                    'Избегайте принятия важных решений'
+                ],
+                color: '#FF6F00'
+            });
+        }
+    }
+
+    // 4. Анализ триггеров
+    const recentTriggers = [];
+    last3Days.forEach(entry => {
+        if (entry.triggers) {
+            Object.keys(entry.triggers).forEach(trigger => {
+                if (entry.triggers[trigger]) {
+                    recentTriggers.push(trigger);
+                }
+            });
+        }
+    });
+
+    const triggerFrequency = {};
+    recentTriggers.forEach(t => {
+        triggerFrequency[t] = (triggerFrequency[t] || 0) + 1;
+    });
+
+    const frequentTriggers = Object.entries(triggerFrequency).filter(([_, count]) => count >= 2);
+    if (frequentTriggers.length > 0) {
+        const triggerNames = {
+            stress: 'стресс', lackOfSleep: 'недосып', conflict: 'конфликты',
+            alcohol: 'алкоголь', seasonalChanges: 'сезонные изменения'
+        };
+        
+        const triggerList = frequentTriggers.map(([t, _]) => triggerNames[t]).join(', ');
+        warnings.push({
+            type: 'info',
+            icon: '🎯',
+            title: 'Повторяющиеся триггеры',
+            message: `Обнаружены частые триггеры: ${triggerList}`,
+            recommendations: [
+                'Постарайтесь минимизировать воздействие триггеров',
+                'Используйте техники совладания',
+                'Обсудите с врачом профилактические меры'
+            ],
+            color: '#2196F3'
+        });
+    }
+
+    // 5. Положительные паттерны
+    if (last7Days.every(e => e.mood === 'interfase') && avgRecentIntensity < 5) {
+        warnings.push({
+            type: 'success',
+            icon: '✨',
+            title: 'Стабильный период',
+            message: '7 дней интерфазы с низкой интенсивностью симптомов. Отличная работа!',
+            recommendations: [
+                'Продолжайте соблюдать режим',
+                'Не прекращайте лечение',
+                'Продолжайте вести дневник'
+            ],
+            color: '#4CAF50'
+        });
+    }
+
+    // Отрисовка предупреждений
+    if (warnings.length === 0) {
+        container.innerHTML = `
+            <div class="pattern-alert" style="padding: 15px; border-radius: 12px; background: #e8f5e9; border-left: 4px solid #4CAF50;">
+                <div style="font-weight: 600; margin-bottom: 5px;">✅ Тревожных признаков не обнаружено</div>
+                <div style="font-size: 0.9rem; color: var(--text-dark);">Продолжайте вести записи и следить за своим состоянием</div>
+            </div>
+        `;
+    } else {
+        container.innerHTML = warnings.map(warning => `
+            <div class="pattern-alert" style="padding: 15px; border-radius: 12px; background: ${warning.color}15; border-left: 4px solid ${warning.color}; margin-bottom: 15px;">
+                <div style="font-weight: 600; margin-bottom: 8px; font-size: 1.05rem;">${warning.icon} ${warning.title}</div>
+                <div style="font-size: 0.95rem; color: var(--text-dark); margin-bottom: 10px;">${warning.message}</div>
+                ${warning.recommendations ? `
+                    <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.5); border-radius: 8px;">
+                        <div style="font-weight: 600; margin-bottom: 5px; font-size: 0.9rem;">Рекомендации:</div>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 0.9rem;">
+                            ${warning.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+}
+
+// Инициализация носимых устройств
+function initializeWearables() {
+    document.querySelectorAll('.wearable-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const device = this.dataset.device;
+            connectWearableDevice(device, this);
+        });
+    });
+}
+
+// Подключение носимого устройства
+function connectWearableDevice(device, button) {
+    const deviceNames = {
+        googlefit: 'Google Fit',
+        fitbit: 'Fitbit',
+        applehealth: 'Apple Health',
+        samsunghealth: 'Samsung Health'
+    };
+
+    showNotification(`Подключение к ${deviceNames[device]}...`, 'info');
+
+    // Имитация подключения (в будущем здесь будет реальная интеграция с OAuth)
+    setTimeout(() => {
+        showNotification(
+            `Интеграция с ${deviceNames[device]} находится в разработке. Скоро вы сможете синхронизировать данные о сне и активности!`,
+            'info'
+        );
+    }, 1000);
 }
 
 // Обновление графика при изменении размера окна
